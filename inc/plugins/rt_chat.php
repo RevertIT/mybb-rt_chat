@@ -36,6 +36,7 @@ if (\rt\Chat\Core::is_enabled())
 
 \rt\Chat\autoload_hooks_via_namespace('rt\Chat\Hooks');
 \rt\Chat\load_rt_extendedcache();
+
 function rt_chat_info(): array
 {
 	return [
@@ -49,6 +50,7 @@ function rt_chat_info(): array
 		'codename' => \rt\Chat\Core::get_plugin_info('codename'),
 	];
 }
+
 function rt_chat_install(): void
 {
 	\rt\Chat\check_php_version();
@@ -59,6 +61,7 @@ function rt_chat_install(): void
 	 \rt\Chat\Core::add_settings();
 	 \rt\Chat\Core::set_cache();
 }
+
 function rt_chat_is_installed(): bool
 {
 	return \rt\Chat\Core::is_installed();
