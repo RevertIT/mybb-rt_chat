@@ -90,7 +90,7 @@
     cursor: pointer;
 }
 .rt_chat-input button:disabled {
-    background: #ccc;
+    background: #ccc !important;
 }
 .rt_chat-input button:hover {
     background: #187bcd;
