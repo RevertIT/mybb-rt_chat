@@ -17,13 +17,20 @@ let RT_Chat =
     isBottom: true,
     loader: spinner,
 
-    fetchMessages: async (url) =>
+    fetchMessages: async (url, postData = {}) =>
     {
+        let formData = new FormData();
+        formData.append('my_post_key', my_post_key);
+        if (postData.length > 0)
+        {
+            for (let f of postData)
+            {
+                formData.append(f.name, f.value);
+            }
+        }
         const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            method: 'post',
+            body: formData,
         });
 
         const result = await response.json();
@@ -95,13 +102,13 @@ let RT_Chat =
     {
         const selectorClass = selector.replace(/\./g, '');
 
-        const data = {'my_post_key': my_post_key}
-        const response = await fetch(`${url}&before=${RT_Chat.oldestMessageId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
+        let formData = new FormData();
+        formData.append('my_post_key', my_post_key);
+        formData.append('before', RT_Chat.oldestMessageId)
+
+        const response = await fetch(url, {
+            method: 'post',
+            body: formData
         });
         const result = await response.json();
 
@@ -207,7 +214,7 @@ let RT_Chat =
         formData.append('my_post_key', myPostKey);
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'post',
             body: formData,
         });
 
@@ -220,6 +227,8 @@ let RT_Chat =
         else
         {
             document.querySelector(selector + '-input input[name="message"]').value = '';
+            RT_Chat.oldestMessageId = ++result.data.last;
+            RT_Chat.renderMessages(selector, result.messages);
         }
     }
 }

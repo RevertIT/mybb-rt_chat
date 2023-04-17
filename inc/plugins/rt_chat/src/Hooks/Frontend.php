@@ -26,26 +26,26 @@ use rt\Chat\ChatHandler\Read;
  */
 function global_start(): void
 {
-    global $mybb;
+	global $mybb;
 
-    // Cache templates
-    switch(\THIS_SCRIPT)
-    {
-        case 'index.php':
-            \rt\Chat\load_templatelist(['chat']);
-            break;
-        case 'misc.php':
-            if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
-            {
-                \rt\Chat\load_templatelist(['chat_layout', 'chat']);
-            }
-            break;
-        case 'xmlhttp.php':
-            if ($mybb->get_input('action') === Core::get_plugin_info('prefix'))
-            {
-                \rt\Chat\load_templatelist(['chat_message']);
-            }
-    };
+	// Cache templates
+	switch(\THIS_SCRIPT)
+	{
+		case 'index.php':
+			\rt\Chat\load_templatelist(['chat']);
+			break;
+		case 'misc.php':
+			if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
+			{
+				\rt\Chat\load_templatelist(['chat_layout', 'chat']);
+			}
+			break;
+		case 'xmlhttp.php':
+			if ($mybb->get_input('action') === Core::get_plugin_info('prefix'))
+			{
+				\rt\Chat\load_templatelist(['chat_message']);
+			}
+	};
 }
 
 /**
@@ -55,13 +55,17 @@ function global_start(): void
  */
 function index_start(): void
 {
-    global $mybb, $lang, $rt_chat;
-    if (Core::can_view())
-    {
-
-        $lang->load('rt_chat');
-        eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
-    }
+	global $mybb, $lang, $rt_chat;
+	if (Core::can_view())
+	{
+		$is_disabled = '';
+		if ($mybb->user['uid'] < 1 || !Core::can_moderate())
+		{
+			$is_disabled = ' disabled="disabled"';
+		}
+		$lang->load('rt_chat');
+		eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
+	}
 }
 
 /**
@@ -73,15 +77,15 @@ function index_start(): void
  */
 function pre_output_page(string $content): string
 {
-    global $mybb;
+	global $mybb;
 
-    $head = Core::head_html_front();
-    $content = str_replace('</head>', $head, $content);
+	$head = Core::head_html_front();
+	$content = str_replace('</head>', $head, $content);
 
-   // $body = Core::body_html_front();
-   // $content = str_replace('</body>', $body, $content);
+	// $body = Core::body_html_front();
+	// $content = str_replace('</body>', $body, $content);
 
-    return $content;
+	return $content;
 }
 
 /**
@@ -91,23 +95,29 @@ function pre_output_page(string $content): string
  */
 function misc_start(): void
 {
-    global $mybb, $lang, $header, $headerinclude, $footer;
+	global $mybb, $lang, $header, $headerinclude, $footer;
 
-    if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
-    {
-        // View chat layout
-        if (Core::can_view())
-        {
-            $lang->load('rt_chat');
+	if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
+	{
+		// View chat layout
+		if (Core::can_view())
+		{
+			$lang->load('rt_chat');
 
-            add_breadcrumb($lang->rt_chat_name, 'misc.php?ext=' . Core::get_plugin_info('prefix'));
+			$is_disabled = '';
+			if ($mybb->user['uid'] < 1 || !Core::can_moderate())
+			{
+				$is_disabled = ' disabled="disabled"';
+			}
 
-            eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
+			add_breadcrumb($lang->rt_chat_name, 'misc.php?ext=' . Core::get_plugin_info('prefix'));
 
-            eval('$template = "' . \rt\Chat\template('chat_layout') . '";');
-            output_page($template);
-        }
-    }
+			eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
+
+			eval('$template = "' . \rt\Chat\template('chat_layout') . '";');
+			output_page($template);
+		}
+	}
 }
 
 /**
@@ -117,53 +127,61 @@ function misc_start(): void
  */
 function xmlhttp(): void
 {
-    global $mybb, $lang;
+	global $mybb, $lang;
 
-    if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
-    {
-        if (Core::can_view())
-        {
-            // View messages in chat
-            if ($mybb->get_input('action') === 'load_messages' && empty($mybb->get_input('before')))
-            {
-                if ($mybb->request_method !== 'post')
-                {
-                    header('Content-type: application/json');
-                    echo json_encode(['status' => false, 'error' => 'Invalid method']);
-                    exit;
-                }
+	if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
+	{
 
-                $messages = new Read();
+		// View messages in chat
+		if ($mybb->get_input('action') === 'load_messages' && empty($mybb->get_input('before')))
+		{
+			$messages = new Read();
 
-                header('Content-type: application/json');
-                echo json_encode($messages->getMessages());
-                exit;
-            }
+			header('Content-type: application/json');
+			echo json_encode($messages->getMessages());
+			exit;
+		}
 
-            // View chat history on scroll
-            if (Core::can_view_history())
-            {
-                if ($mybb->get_input('action') === 'load_messages' && !empty($mybb->get_input('before', \MyBB::INPUT_INT)))
-                {
-                    $messages = new Read();
+		// View chat history on scroll
+		if ($mybb->get_input('action') === 'load_messages' && !empty($mybb->get_input('before', \MyBB::INPUT_INT)))
+		{
 
-                    header('Content-type: application/json');
-                    echo json_encode($messages->getMessageBeforeId($mybb->get_input('before', \MyBB::INPUT_INT)));
-                    exit;
-                }
-            }
+			$messages = new Read();
 
-            // Insert message
-            if ($mybb->get_input('action') === 'insert_message')
-            {
-                $insert = new Create();
+			header('Content-type: application/json');
+			echo json_encode($messages->getMessageBeforeId($mybb->get_input('before', \MyBB::INPUT_INT)));
+			exit;
+		}
 
-                $data = $insert->insertMessage($mybb->get_input('message'));
+		// Insert message
+		if ($mybb->get_input('action') === 'insert_message')
+		{
+			$insert = new Create();
 
-                header('Content-type: application/json');
-                echo json_encode($data);
-                exit;
-            }
-        }
-    }
+			$data = $insert->insertMessage($mybb->get_input('message'));
+
+			header('Content-type: application/json');
+			echo json_encode($data);
+			exit;
+		}
+
+	}
+}
+
+/**
+ * Hook: task_hourlycleanup
+ *
+ * @param $args
+ * @return void
+ */
+function task_hourlycleanup(&$args): void
+{
+	global $mybb, $db;
+
+	if (Core::is_enabled() && isset($mybb->settings['rt_chat_clear_after']) && (int) $mybb->settings['rt_chat_clear_after'] > 0)
+	{
+		$rt_chat_deletion_time = TIME_NOW - (60 * 60 * 24 * (int) $mybb->settings['rt_chat_clear_after']);
+
+		$db->delete_query("rtchat", "dateline < '{$rt_chat_deletion_time}'");
+	}
 }

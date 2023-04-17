@@ -8,5 +8,6 @@
     </div>
     <div class="rt_chat-message-text">
         {$row['message']}
+        <input type="hidden" name="original_message" value="{$row['original_message']}">
     </div>
 </div>

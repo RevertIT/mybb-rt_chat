@@ -5,9 +5,9 @@
     <div class="rt_chat-messages"></div>
     <form onsubmit="RT_Chat.insertMessage('{$mybb->settings['bburl']}/xmlhttp.php?ext=rt_chat&action=insert_message', '.rt_chat');">
         <div class="rt_chat-input">
-            <input type="hidden" name="my_post_key" value="{$mybb->post_code}">
-            <input type="text" name="message" placeholder="{$lang->rt_chat_enter_message}" onkeydown="event">
-            <button>{$lang->rt_chat_send}</button>
+            <input type="hidden" name="my_post_key" value="{$mybb->post_code}"/>
+            <input{$is_disabled} type="text" name="message" placeholder="{$lang->rt_chat_enter_message}" onkeydown="event"/>
+            <button{$is_disabled}>{$lang->rt_chat_send}</button>
         </div>
     </form>
 </div>

@@ -23,7 +23,7 @@ class Core
 		'description' => 'RT chat development version.',
 		'author' => 'RevertIT',
 		'authorsite' => 'https://github.com/RevertIT/',
-		'version' => '0.1',
+		'version' => '0.2',
 		'compatibility' => '18*',
 		'codename' => 'rt_chat',
 		'prefix' => 'rt_chat',
@@ -190,6 +190,12 @@ class Core
                     'optionscode' => 'numeric',
                     'value' => 10,
                 ],
+				"clear_after" => [
+					'title' => 'Delete messages older than (in days)',
+					'description' => 'To prevent having too many logs, we should remove old messages after certain period of time.',
+					'optionscode' => 'numeric',
+					'value' => 7,
+				],
                 "height" => [
                     'title' => "Chat height",
                     'description' => 'Chat height in px/pt/etc.',
@@ -250,6 +256,7 @@ class Core
                     'optionscode' => 'groupselect',
                     'value' => '4',
                 ],
+
             ]
         );
     }

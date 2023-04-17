@@ -17,64 +17,122 @@ namespace rt\Chat\ChatHandler;
 
 use rt\Chat\Core;
 
-class Create
+class Create extends AbstractChatHandler
 {
+	private int $messageId;
 
-    /**
-     * Generate error function to ease errors handling
-     *
-     * @param string $error
-     * @return array
-     */
-    private function error(string $error): array
-    {
-        return [
-            'status' => false,
-            'error' => $error,
-        ];
-    }
+	/**
+	 * Insert chat message handler
+	 *
+	 * @param string $message
+	 * @return mixed
+	 */
+	public function insertMessage(string $message): mixed
+	{
+		global $rt_cache;
 
-    /**
-     * Insert chat message handler
-     *
-     * @param string $message
-     * @return mixed
-     */
-    public function insertMessage(string $message): mixed
-    {
-        global $mybb, $db, $rt_cache, $lang;
+		$message = trim_blank_chrs($message);
 
-        $lang->load(Core::get_plugin_info('prefix'));
+		if (!$this->mybb->user['uid'])
+		{
+			$this->error($this->lang->rt_chat_not_logged_in);
+		}
+		if (!Core::can_view())
+		{
+			$this->error($this->lang->rt_chat_no_perms);
+		}
+		if (!Core::can_post() && !Core::can_moderate())
+		{
+			$this->lang->rt_chat_no_posts = $this->lang->sprintf($this->lang->rt_chat_no_posts, (int) $this->mybb->settings['rt_chat_minposts_chat'], $this->mybb->user['postnum']);
+			$this->error($this->lang->rt_chat_no_posts);
+		}
+		if (empty($message))
+		{
+			$this->error($this->lang->rt_chat_empty_msg);
+		}
+		if (isset($this->mybb->settings['rt_chat_msg_length']) && my_strlen($message) > (int) $this->mybb->settings['rt_chat_msg_length'])
+		{
+			$this->lang->rt_chat_too_long_msg = $this->lang->sprintf($this->lang->rt_chat_too_long_msg, my_strlen($message), $this->mybb->settings['rt_chat_msg_length']);
+			$this->error($this->lang->rt_chat_too_long_msg);
+		}
 
-        $message = trim_blank_chrs($message);
+		if (!empty($this->getError()))
+		{
+			return $this->getError();
+		}
 
-        if (!Core::can_view())
-        {
-            return $this->error($lang->rt_chat_no_perms);
-        }
-        if (!Core::can_post() && !Core::can_moderate())
-        {
-            $lang->rt_chat_no_posts = $lang->sprintf($lang->rt_chat_no_posts, (int) $mybb->settings['rt_chat_minposts_chat'], $mybb->user['postnum']);
-            return $this->error($lang->rt_chat_no_posts);
-        }
-        if (empty($message))
-        {
-            return $this->error($lang->rt_chat_empty_msg);
-        }
-        if (isset($mybb->settings['rt_chat_msg_length']) && my_strlen($message) > (int) $mybb->settings['rt_chat_msg_length'])
-        {
-            $lang->rt_chat_too_long_msg = $lang->sprintf($lang->rt_chat_too_long_msg, my_strlen($message), $mybb->settings['rt_chat_msg_length']);
-            return $this->error($lang->rt_chat_too_long_msg);
-        }
+		$this->messageId = $this->db->insert_query('rtchat', [
+			'uid' => (int) $this->mybb->user['uid'],
+			'message' => $this->db->escape_string($message),
+			'dateline' => TIME_NOW,
+		]);
 
-        $db->insert_query('rtchat', [
-            'uid' => (int) $mybb->user['uid'],
-            'message' => $db->escape_string($message),
-            'dateline' => TIME_NOW,
-        ]);
+		$rt_cache->delete(Core::get_plugin_info('prefix') . '_messages');
 
-        $rt_cache->delete(Core::get_plugin_info('prefix') . '_messages');
+		return $this->renderTemplate(
+			(int) $this->messageId,
+			(int) $this->mybb->user['uid'],
+			$this->db->escape_string($message),
+			TIME_NOW
+		);
+	}
 
-        return (new Read())->getMessages();
-    }
+	/**
+	 * Generate a mockup to render latest message in the chat
+	 *
+	 * @param int $messageId
+	 * @param int $uid
+	 * @param string $message
+	 * @param int $dateline
+	 * @return bool|array
+	 */
+	private function renderTemplate(int $messageId, int $uid, string $message, int $dateline): bool|array
+	{
+		if (empty($messageId))
+		{
+			return false;
+		}
+
+		// Parse bbcodes
+		$parser_options = [
+			"allow_html" => 0,
+			"allow_mycode" => 0,
+			"allow_smilies" => 0,
+			"allow_imgcode" => 0,
+			"allow_videocode" => 0,
+			"filter_badwords" => 1,
+			"filter_cdata" => 1
+		];
+
+		if (isset($this->mybb->settings['rt_chat_mycode_enabled']) && (int) $this->mybb->settings['rt_chat_mycode_enabled'] === 1)
+		{
+			$parser_options['allow_mycode'] = 1;
+		}
+		if (isset($this->mybb->settings['rt_chat_smilies_enabled']) && (int) $this->mybb->settings['rt_chat_smilies_enabled'] === 1)
+		{
+			$parser_options['allow_smilies'] = 1;
+		}
+
+		$row = $messages = [];
+		$row['dateline'] = $dateline;
+		$row['date'] = my_date('relative', $dateline);
+		$row['avatar'] = !empty($this->mybb->user['avatar']) ? htmlspecialchars_uni($this->mybb->user['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
+		$row['username'] = isset($this->mybb->user['uid'], $this->mybb->user['username'], $this->mybb->user['usergroup'], $this->mybb->user['displaygroup']) ? build_profile_link(format_name($this->mybb->user['username'], $this->mybb->user['usergroup'], $this->mybb->user['displaygroup']), $this->mybb->user['uid']) : $this->lang->na;
+		$row['original_message'] = base64_encode(htmlspecialchars_uni($message));
+		$row['message'] = $this->parser->parse_message($message, $parser_options);
+
+		eval("\$message = \"".\rt\Chat\template('chat_message', true)."\";");
+		$messages[] =  [
+			'id' => $messageId,
+			'html' => $message,
+		];
+
+		return [
+			'status' => true,
+			'messages' => $messages,
+			'data' => [
+				'last' => $messageId,
+			]
+		];
+	}
 }

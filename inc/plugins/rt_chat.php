@@ -22,6 +22,7 @@ if (!defined("IN_MYBB"))
 // Main files
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/Core.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/functions.php';
+require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/AbstractChatHandler.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Read.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Create.php';
 require MYBB_ROOT . 'inc/class_parser.php';
@@ -56,10 +57,10 @@ function rt_chat_install(): void
 	\rt\Chat\check_php_version();
 	\rt\Chat\load_pluginlibrary();
 
-    \rt\Chat\Core::edit_installed_templates();
-    \rt\Chat\Core::add_database_modifications();
-	 \rt\Chat\Core::add_settings();
-	 \rt\Chat\Core::set_cache();
+	\rt\Chat\Core::edit_installed_templates();
+	\rt\Chat\Core::add_database_modifications();
+	\rt\Chat\Core::add_settings();
+	\rt\Chat\Core::set_cache();
 }
 
 function rt_chat_is_installed(): bool
@@ -69,31 +70,31 @@ function rt_chat_is_installed(): bool
 
 function rt_chat_uninstall(): void
 {
-    \rt\Chat\check_php_version();
-    \rt\Chat\load_pluginlibrary();
+	\rt\Chat\check_php_version();
+	\rt\Chat\load_pluginlibrary();
 
-    \rt\Chat\Core::revert_installed_templates_changes();
-    \rt\Chat\Core::drop_database_modifications();
-    \rt\Chat\Core::remove_settings();
-    \rt\Chat\Core::remove_cache();
+	\rt\Chat\Core::revert_installed_templates_changes();
+	\rt\Chat\Core::drop_database_modifications();
+	\rt\Chat\Core::remove_settings();
+	\rt\Chat\Core::remove_cache();
 }
 
 function rt_chat_activate(): void
 {
-    \rt\Chat\check_php_version();
-    \rt\Chat\load_pluginlibrary();
+	\rt\Chat\check_php_version();
+	\rt\Chat\load_pluginlibrary();
 
-    \rt\Chat\Core::add_templates();
-    \rt\Chat\Core::add_stylesheet();
+	\rt\Chat\Core::add_templates();
+	\rt\Chat\Core::add_stylesheet();
 	\rt\Chat\Core::add_settings();
 	\rt\Chat\Core::set_cache();
 }
 
 function rt_chat_deactivate(): void
 {
-    \rt\Chat\check_php_version();
-    \rt\Chat\load_pluginlibrary();
+	\rt\Chat\check_php_version();
+	\rt\Chat\load_pluginlibrary();
 
-    \rt\Chat\Core::remove_templates();
-    \rt\Chat\Core::remove_stylesheet();
+	\rt\Chat\Core::remove_templates();
+	\rt\Chat\Core::remove_stylesheet();
 }
