@@ -17,32 +17,32 @@ namespace rt\Chat;
 
 class Core
 {
-	private const PLUGIN_DETAILS = [
-		'name' => 'RT Chat <span style="color: red">(Experimental)</span>',
-		'website' => 'https://github.com/RevertIT/mybb-rt_chat',
-		'description' => 'RT chat development version.',
-		'author' => 'RevertIT',
-		'authorsite' => 'https://github.com/RevertIT/',
-		'version' => '0.2',
-		'compatibility' => '18*',
-		'codename' => 'rt_chat',
-		'prefix' => 'rt_chat',
-	];
+    private const PLUGIN_DETAILS = [
+        'name' => 'RT Chat <span style="color: red">(Experimental)</span>',
+        'website' => 'https://github.com/RevertIT/mybb-rt_chat',
+        'description' => 'RT chat development version.',
+        'author' => 'RevertIT',
+        'authorsite' => 'https://github.com/RevertIT/',
+        'version' => '0.2',
+        'compatibility' => '18*',
+        'codename' => 'rt_chat',
+        'prefix' => 'rt_chat',
+    ];
 
-	/**
-	 * Get plugin info
-	 *
-	 * @param string $info
-	 * @return string
-	 */
-	public static function get_plugin_info(string $info): string
-	{
-		return match(isset(self::PLUGIN_DETAILS[$info]))
-		{
-			true => self::PLUGIN_DETAILS[$info],
-			default => '',
-		};
-	}
+    /**
+     * Get plugin info
+     *
+     * @param string $info
+     * @return string
+     */
+    public static function get_plugin_info(string $info): string
+    {
+        return match(isset(self::PLUGIN_DETAILS[$info]))
+        {
+            true => self::PLUGIN_DETAILS[$info],
+            default => '',
+        };
+    }
 
     /**
      * Get plugin description
@@ -50,26 +50,26 @@ class Core
      * @return string
      */
     public static function get_plugin_description(): string
-	{
-		return self::PLUGIN_DETAILS['description'];
-	}
+    {
+        return self::PLUGIN_DETAILS['description'];
+    }
 
-	/**
-	 * Check if plugin is installed
-	 *
-	 * @return bool
-	 */
-	public static function is_installed(): bool
-	{
-		global $mybb;
+    /**
+     * Check if plugin is installed
+     *
+     * @return bool
+     */
+    public static function is_installed(): bool
+    {
+        global $mybb;
 
-		if (isset($mybb->settings['rt_chat_enabled']))
-		{
-			return true;
-		}
+        if (isset($mybb->settings['rt_chat_enabled']))
+        {
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
     /**
      * Check if plugin is enabled
@@ -77,15 +77,15 @@ class Core
      * @return bool
      */
     public static function is_enabled(): bool
-	{
-		global $mybb;
+    {
+        global $mybb;
 
-		return match(isset($mybb->settings['rt_chat_enabled']) && (int) $mybb->settings['rt_chat_enabled'] === 1)
-		{
-			true => true,
-			default => false,
-		};
-	}
+        return match(isset($mybb->settings['rt_chat_enabled']) && (int) $mybb->settings['rt_chat_enabled'] === 1)
+        {
+            true => true,
+            default => false,
+        };
+    }
 
     /**
      * Can view the chat
@@ -190,12 +190,12 @@ class Core
                     'optionscode' => 'numeric',
                     'value' => 10,
                 ],
-				"clear_after" => [
-					'title' => 'Delete messages older than (in days)',
-					'description' => 'To prevent having too many logs, we should remove old messages after certain period of time.',
-					'optionscode' => 'numeric',
-					'value' => 7,
-				],
+                "clear_after" => [
+                    'title' => 'Delete messages older than (in days)',
+                    'description' => 'To prevent having too many logs, we should remove old messages after certain period of time.',
+                    'optionscode' => 'numeric',
+                    'value' => 7,
+                ],
                 "height" => [
                     'title' => "Chat height",
                     'description' => 'Chat height in px/pt/etc.',
