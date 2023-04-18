@@ -24,6 +24,7 @@ Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system whe
 ### 📃 Features
 - Responsive design (CSS, templates, and settings included)
 - Ajax chat with cached messages. (**No database stress!**)
+- Chat bot (Get configurable notifications from bot in chat)
 - Infinite scroll for older messages
 - Set refresh time
 - Set away time (Ajax won't be called when user is afk)
