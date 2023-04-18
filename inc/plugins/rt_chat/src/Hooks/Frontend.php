@@ -26,26 +26,26 @@ use rt\Chat\ChatHandler\Read;
  */
 function global_start(): void
 {
-	global $mybb;
+    global $mybb;
 
-	// Cache templates
-	switch(\THIS_SCRIPT)
-	{
-		case 'index.php':
-			\rt\Chat\load_templatelist(['chat']);
-			break;
-		case 'misc.php':
-			if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
-			{
-				\rt\Chat\load_templatelist(['chat_layout', 'chat']);
-			}
-			break;
-		case 'xmlhttp.php':
-			if ($mybb->get_input('action') === Core::get_plugin_info('prefix'))
-			{
-				\rt\Chat\load_templatelist(['chat_message']);
-			}
-	};
+    // Cache templates
+    switch(\THIS_SCRIPT)
+    {
+        case 'index.php':
+            \rt\Chat\load_templatelist(['chat']);
+            break;
+        case 'misc.php':
+            if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
+            {
+                \rt\Chat\load_templatelist(['chat_layout', 'chat']);
+            }
+            break;
+        case 'xmlhttp.php':
+            if ($mybb->get_input('action') === Core::get_plugin_info('prefix'))
+            {
+                \rt\Chat\load_templatelist(['chat_message']);
+            }
+    };
 }
 
 /**
@@ -55,17 +55,17 @@ function global_start(): void
  */
 function index_start(): void
 {
-	global $mybb, $lang, $rt_chat;
-	if (Core::can_view())
-	{
-		$is_disabled = '';
-		if ($mybb->user['uid'] < 1 || !Core::can_moderate())
-		{
-			$is_disabled = ' disabled="disabled"';
-		}
-		$lang->load('rt_chat');
-		eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
-	}
+    global $mybb, $lang, $rt_chat;
+    if (Core::can_view())
+    {
+        $is_disabled = '';
+        if ($mybb->user['uid'] < 1 || !Core::can_moderate())
+        {
+            $is_disabled = ' disabled="disabled"';
+        }
+        $lang->load('rt_chat');
+        eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
+    }
 }
 
 /**
@@ -77,15 +77,15 @@ function index_start(): void
  */
 function pre_output_page(string $content): string
 {
-	global $mybb;
+    global $mybb;
 
-	$head = Core::head_html_front();
-	$content = str_replace('</head>', $head, $content);
+    $head = Core::head_html_front();
+    $content = str_replace('</head>', $head, $content);
 
-	// $body = Core::body_html_front();
-	// $content = str_replace('</body>', $body, $content);
+    // $body = Core::body_html_front();
+    // $content = str_replace('</body>', $body, $content);
 
-	return $content;
+    return $content;
 }
 
 /**
@@ -95,29 +95,29 @@ function pre_output_page(string $content): string
  */
 function misc_start(): void
 {
-	global $mybb, $lang, $header, $headerinclude, $footer;
+    global $mybb, $lang, $header, $headerinclude, $footer;
 
-	if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
-	{
-		// View chat layout
-		if (Core::can_view())
-		{
-			$lang->load('rt_chat');
+    if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
+    {
+        // View chat layout
+        if (Core::can_view())
+        {
+            $lang->load('rt_chat');
 
-			$is_disabled = '';
-			if ($mybb->user['uid'] < 1 || !Core::can_moderate())
-			{
-				$is_disabled = ' disabled="disabled"';
-			}
+            $is_disabled = '';
+            if ($mybb->user['uid'] < 1 || !Core::can_moderate())
+            {
+                $is_disabled = ' disabled="disabled"';
+            }
 
-			add_breadcrumb($lang->rt_chat_name, 'misc.php?ext=' . Core::get_plugin_info('prefix'));
+            add_breadcrumb($lang->rt_chat_name, 'misc.php?ext=' . Core::get_plugin_info('prefix'));
 
-			eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
+            eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
 
-			eval('$template = "' . \rt\Chat\template('chat_layout') . '";');
-			output_page($template);
-		}
-	}
+            eval('$template = "' . \rt\Chat\template('chat_layout') . '";');
+            output_page($template);
+        }
+    }
 }
 
 /**
@@ -127,45 +127,46 @@ function misc_start(): void
  */
 function xmlhttp(): void
 {
-	global $mybb, $lang;
+    global $mybb, $lang;
 
-	if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
-	{
+    if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
+    {
 
-		// View messages in chat
-		if ($mybb->get_input('action') === 'load_messages' && empty($mybb->get_input('before')))
-		{
-			$messages = new Read();
+        // View messages in chat
+        if ($mybb->get_input('action') === 'load_messages' && empty($mybb->get_input('before')))
+        {
+            $messages = new Read();
 
-			header('Content-type: application/json');
-			echo json_encode($messages->getMessages());
-			exit;
-		}
+            header('Content-type: application/json');
+            echo json_encode($messages->getMessages());
+            exit;
+        }
 
-		// View chat history on scroll
-		if ($mybb->get_input('action') === 'load_messages' && !empty($mybb->get_input('before', \MyBB::INPUT_INT)))
-		{
+        // View chat history on scroll
+        if ($mybb->get_input('action') === 'load_messages' && !empty($mybb->get_input('before', \MyBB::INPUT_INT)))
+        {
 
-			$messages = new Read();
+            $messages = new Read();
 
-			header('Content-type: application/json');
-			echo json_encode($messages->getMessageBeforeId($mybb->get_input('before', \MyBB::INPUT_INT)));
-			exit;
-		}
+            header('Content-type: application/json');
+            echo json_encode($messages->getMessageBeforeId($mybb->get_input('before', \MyBB::INPUT_INT)));
+            exit;
+        }
 
-		// Insert message
-		if ($mybb->get_input('action') === 'insert_message')
-		{
-			$insert = new Create();
+        // Insert message
+        if ($mybb->get_input('action') === 'insert_message')
+        {
+            $insert = new Create();
+            $uid = (int) $mybb->user['uid'];
 
-			$data = $insert->insertMessage($mybb->get_input('message'));
+            $data = $insert->insertMessage($uid, $mybb->get_input('message'));
 
-			header('Content-type: application/json');
-			echo json_encode($data);
-			exit;
-		}
+            header('Content-type: application/json');
+            echo json_encode($data);
+            exit;
+        }
 
-	}
+    }
 }
 
 /**
@@ -176,12 +177,90 @@ function xmlhttp(): void
  */
 function task_hourlycleanup(&$args): void
 {
-	global $mybb, $db;
+    global $mybb, $db;
 
-	if (Core::is_enabled() && isset($mybb->settings['rt_chat_clear_after']) && (int) $mybb->settings['rt_chat_clear_after'] > 0)
-	{
-		$rt_chat_deletion_time = TIME_NOW - (60 * 60 * 24 * (int) $mybb->settings['rt_chat_clear_after']);
+    if (isset($mybb->settings['rt_chat_clear_after']) && (int) $mybb->settings['rt_chat_clear_after'] > 0)
+    {
+        $rt_chat_deletion_time = TIME_NOW - (60 * 60 * 24 * (int) $mybb->settings['rt_chat_clear_after']);
 
-		$db->delete_query("rtchat", "dateline < '{$rt_chat_deletion_time}'");
-	}
+        $db->delete_query("rtchat", "dateline < '{$rt_chat_deletion_time}'");
+    }
+}
+
+/**
+ * Hook: newreply_do_newreply_end
+ *
+ * @return void
+ */
+function newreply_do_newreply_end(): void
+{
+    global $mybb, $lang, $post, $tid, $pid, $thread_subject;
+
+    $watch_replies = 1;
+    if (Core::is_bot_enabled() &&
+        in_array($watch_replies, \rt\Chat\get_settings_values('bot_actions')) && // watch settings
+        (in_array($post['fid'], \rt\Chat\get_settings_values('bot_forums')) || in_array(-1, \rt\Chat\get_settings_values('bot_forums')))
+    )
+    {
+        $insert = new Create();
+
+        $post_link = $mybb->settings['bburl'] . '/' . get_post_link($pid, $tid)."#pid{$pid}";
+        $thread_link = $mybb->settings['bburl'] . '/' . get_thread_link($tid);
+        $user_link = $mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $post['uid'];
+        $forum_link = $mybb->settings['bburl'] . '/' . get_forum_link($post['fid']);
+        $forum_name = isset(get_forum($post['fid'])['name']) ? htmlspecialchars_uni(get_forum($post['fid'])['name']) : $lang->na;
+
+        $lang->rt_chat_new_post = $lang->sprintf($lang->rt_chat_new_post, $post_link, $thread_link, $thread_subject, $user_link, $post['username'], $forum_link, $forum_name);
+        $insert->insertMessage((int) $mybb->settings['rt_chat_bot_id'], $lang->rt_chat_new_post, true);
+    }
+}
+
+/**
+ * Hook: newthread_do_newthread_end
+ *
+ * @return void
+ */
+function newthread_do_newthread_end(): void
+{
+    global $mybb, $lang, $new_thread, $tid;
+
+    $watch_threads = 2;
+    if (Core::is_bot_enabled() &&
+        in_array($watch_threads, \rt\Chat\get_settings_values('bot_actions')) &&
+        (in_array($new_thread['fid'], \rt\Chat\get_settings_values('bot_forums')) || in_array(-1, \rt\Chat\get_settings_values('bot_forums')))
+    )
+    {
+        $insert = new Create();
+
+        $thread_link = $mybb->settings['bburl'] . '/' . get_thread_link($tid);
+        $user_link = $mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $new_thread['uid'];
+        $forum_link = $mybb->settings['bburl'] . '/' . get_forum_link($new_thread['fid']);
+        $forum_name = isset(get_forum($new_thread['fid'])['name']) ? htmlspecialchars_uni(get_forum($new_thread['fid'])['name']) : $lang->na;
+
+        $lang->rt_chat_new_thread = $lang->sprintf($lang->rt_chat_new_thread, $thread_link, $new_thread['subject'], $user_link, $new_thread['username'], $forum_link, $forum_name);
+        $insert->insertMessage((int) $mybb->settings['rt_chat_bot_id'], $lang->rt_chat_new_thread, true);
+    }
+}
+
+/**
+ * Hook: member_do_register_end
+ *
+ * @return void
+ */
+function member_do_register_end(): void
+{
+    global $mybb, $lang, $user_info;
+
+    $watch_users = 3;
+    if (Core::is_bot_enabled() && in_array($watch_users, \rt\Chat\get_settings_values('bot_actions')))
+    {
+        $lang->load('rt_chat');
+
+        $insert = new Create();
+
+        $user_link = $mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $user_info['uid'];
+
+        $lang->rt_chat_new_user = $lang->sprintf($lang->rt_chat_new_user, $user_link, $user_info['username']);
+        $insert->insertMessage((int) $mybb->settings['rt_chat_bot_id'], $lang->rt_chat_new_user, true);
+    }
 }

@@ -25,21 +25,21 @@ namespace rt\Chat;
  */
 function autoload_hooks_via_namespace(string $namespace): void
 {
-	global $plugins;
+    global $plugins;
 
-	$namespace = strtolower($namespace);
-	$user_functions = get_defined_functions()['user'];
+    $namespace = strtolower($namespace);
+    $user_functions = get_defined_functions()['user'];
 
-	foreach ($user_functions as $function)
-	{
-		$namespace_prefix = strlen($namespace) + 1;
+    foreach ($user_functions as $function)
+    {
+        $namespace_prefix = strlen($namespace) + 1;
 
-		if (substr($function, 0, $namespace_prefix) === $namespace . '\\')
-		{
-			$hook_name = substr_replace($function, '', 0, $namespace_prefix);
-			$plugins->add_hook($hook_name, $namespace . '\\' . $hook_name);
-		}
-	}
+        if (substr($function, 0, $namespace_prefix) === $namespace . '\\')
+        {
+            $hook_name = substr_replace($function, '', 0, $namespace_prefix);
+            $plugins->add_hook($hook_name, $namespace . '\\' . $hook_name);
+        }
+    }
 }
 
 /**

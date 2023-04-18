@@ -135,6 +135,13 @@ class Core
         return isset($mybb->settings['rt_chat_minposts_chat']) && (int) $mybb->settings['rt_chat_minposts_chat'] > $mybb->user['postnum'];
     }
 
+    public static function is_bot_enabled()
+    {
+        global $mybb;
+
+        return isset($mybb->settings['rt_chat_bot_enabled']) && (int) $mybb->settings['rt_chat_bot_enabled'] === 1;
+    }
+
     /**
      * Set plugin cache
      *
@@ -183,6 +190,34 @@ class Core
                     'description' => 'Useful way to disable plugin without deleting templates/settings.',
                     'optionscode' => 'yesno',
                     'value' => 1
+                ],
+                "bot_enabled" => [
+                    'title' => 'Enable bot notifications?',
+                    'description' => 'This setting will add new messages into chat as a bot when new action is detected.',
+                    'optionscode' => 'yesno',
+                    'value' => 1
+                ],
+                "bot_id" => [
+                    'title' => 'Which user id should bot have?',
+                    'description' => 'Set the desired user id for the bot when posting in the chat.',
+                    'optionscode' => 'numeric',
+                    'value' => 2
+                ],
+                "bot_forums"  => [
+                    'title' => 'Which forums should bot check for new posts/threads?',
+                    'description' => 'Set the desired forums which bot should check.',
+                    'optionscode' => 'groupselect',
+                    'value' => '-1'
+                ],
+                "bot_actions" => [
+                    'title' => 'Select which actions should the bot watch?',
+                    'description' => 'Comma separated actions.<br>
+					0. None<br>
+					1. Watch new replies<br>
+					2. Watch new threads<br>
+					3. Watch new user registrations<br>',
+                    'optionscode' => "text",
+                    'value' => '1,2,3'
                 ],
                 "total_messages" => [
                     'title' => 'Total messages',

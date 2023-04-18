@@ -19,63 +19,63 @@ use rt\Chat\Core;
 
 class AbstractChatHandler
 {
-	private string $errorMessage;
-	private bool $errorStatus;
-	protected \postParser $parser;
-	protected \MyBB $mybb;
-	protected \MyLanguage $lang;
-	protected \DB_Base $db;
+    private string $errorMessage;
+    private bool $errorStatus;
+    protected \postParser $parser;
+    protected \MyBB $mybb;
+    protected \MyLanguage $lang;
+    protected \DB_Base $db;
 
-	public function __construct()
-	{
-		global $mybb, $lang, $db;
+    public function __construct()
+    {
+        global $mybb, $lang, $db;
 
-		// Get usual handlers
-		$this->mybb = $mybb;
-		$this->lang = $lang;
-		$this->db = $db;
+        // Get usual handlers
+        $this->mybb = $mybb;
+        $this->lang = $lang;
+        $this->db = $db;
 
-		$this->lang->load(Core::get_plugin_info('prefix'));
+        $this->lang->load(Core::get_plugin_info('prefix'));
 
-		$this->parser = new \postParser();
+        $this->parser = new \postParser();
 
-		if ($this->mybb->request_method !== 'post')
-		{
-			$this->error($this->lang->rt_chat_invalid_post_method);
-		}
-		if (!verify_post_check($this->mybb->get_input('my_post_key'), true))
-		{
-			$this->error($this->lang->invalid_post_code);
-		}
-	}
+        if ($this->mybb->request_method !== 'post')
+        {
+            $this->error($this->lang->rt_chat_invalid_post_method);
+        }
+        if (!verify_post_check($this->mybb->get_input('my_post_key'), true))
+        {
+            $this->error($this->lang->invalid_post_code);
+        }
+    }
 
-	/**
-	 * Generate error function to ease errors handling
-	 *
-	 * @param string $error
-	 * @return void
-	 */
-	protected function error(string $error): void
-	{
-		$this->errorStatus = false;
-		$this->errorMessage = $error;
-	}
+    /**
+     * Generate error function to ease errors handling
+     *
+     * @param string $error
+     * @return void
+     */
+    protected function error(string $error): void
+    {
+        $this->errorStatus = false;
+        $this->errorMessage = $error;
+    }
 
-	/**
-	 * Get error data
-	 *
-	 * @return array|bool
-	 */
-	protected function getError(): array|bool
-	{
-		if (empty($this->errorMessage))
-		{
-			return false;
-		}
+    /**
+     * Get error data
+     *
+     * @return array|bool
+     */
+    protected function getError(): array|bool
+    {
+        if (empty($this->errorMessage))
+        {
+            return false;
+        }
 
-		return [
-			'status' => $this->errorStatus,
-			'error' => $this->errorMessage,
-		];
-	}
+        return [
+            'status' => $this->errorStatus,
+            'error' => $this->errorMessage,
+        ];
+    }
 }
