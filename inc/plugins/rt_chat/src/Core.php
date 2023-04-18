@@ -23,7 +23,7 @@ class Core
         'description' => 'RT chat development version.',
         'author' => 'RevertIT',
         'authorsite' => 'https://github.com/RevertIT/',
-        'version' => '0.2',
+        'version' => '0.3',
         'compatibility' => '18*',
         'codename' => 'rt_chat',
         'prefix' => 'rt_chat',
