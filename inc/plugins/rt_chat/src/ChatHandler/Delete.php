@@ -39,11 +39,7 @@ class Delete extends AbstractChatHandler
 		$query = $this->db->simple_select('rtchat', 'uid', "id = '{$this->db->escape_string($messageId)}'");
 		$row = $this->db->fetch_field($query, 'uid');
 
-		if (empty($row))
-		{
-			$this->error($this->lang->rt_chat_selected_message_not_found);
-		}
-		if (isset($row['uid']) && $row['uid'] !== $this->mybb->user['uid'] && !Core::can_moderate())
+		if (empty($row) || isset($row['uid']) && $row['uid'] !== $this->mybb->user['uid'] && !Core::can_moderate())
 		{
 			$this->error($this->lang->rt_chat_selected_message_not_found);
 		}
