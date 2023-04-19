@@ -161,13 +161,13 @@ function load_pluginlibrary(): void
         }
         if (version_compare((string) $PL->version, '13', '<'))
         {
-            flash_message("PluginLibrary version is outdated, please update the plugin.", "error");
+            flash_message("PluginLibrary version is outdated. You can update it by <a href=\"https://community.mybb.com/mods.php?action=view&pid=573\">clicking here</a>.", "error");
             admin_redirect("index.php?module=config-plugins");
         }
     }
     else
     {
-        flash_message("PluginLibrary is missing.", "error");
+        flash_message("PluginLibrary is missing. You can download it by <a href=\"https://community.mybb.com/mods.php?action=view&pid=573\">clicking here</a>.", "error");
         admin_redirect("index.php?module=config-plugins");
     }
 }
@@ -183,7 +183,7 @@ function load_rt_extendedcache(): void
 
     if (!defined('RT_EXTENDEDCACHE'))
     {
-        define('RT_EXTENDEDCACHE', MYBB_ROOT.'inc/plugins/rt_extendedcache.php');
+        define('RT_EXTENDEDCACHE', MYBB_ROOT . 'inc/plugins/rt_extendedcache.php');
     }
     require_once RT_EXTENDEDCACHE;
 
@@ -196,13 +196,13 @@ function load_rt_extendedcache(): void
         }
         if (version_compare((string) $rt_cache->version, '2', '<'))
         {
-            flash_message("RT Extended Cache version is outdated, please update the plugin.", "error");
+            flash_message("RT Extended Cache version is outdated. You can update it by <a href=\"https://community.mybb.com/mods.php?action=view&pid=1558\">clicking here</a>.", "error");
             admin_redirect("index.php?module=config-plugins");
         }
     }
     else
     {
-        flash_message("RT Extended cache is missing.", "error");
+        flash_message("RT Extended cache is missing. You can download it by <a href=\"https://community.mybb.com/mods.php?action=view&pid=1558\">clicking here</a>.", "error");
         admin_redirect("index.php?module=config-plugins");
     }
 }

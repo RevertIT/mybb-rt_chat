@@ -35,7 +35,7 @@ class Create extends AbstractChatHandler
 
         $message = trim_blank_chrs($message);
 
-        if (!$this->mybb->user['uid'])
+        if ($this->mybb->user['uid'] < 1)
         {
             $this->error($this->lang->rt_chat_not_logged_in);
         }
@@ -47,6 +47,10 @@ class Create extends AbstractChatHandler
         {
             $this->lang->rt_chat_no_posts = $this->lang->sprintf($this->lang->rt_chat_no_posts, (int) $this->mybb->settings['rt_chat_minposts_chat'], $this->mybb->user['postnum']);
             $this->error($this->lang->rt_chat_no_posts);
+        }
+        if (Core::is_banned())
+        {
+            $this->error($this->lang->rt_chat_banned);
         }
         if (empty($message))
         {
@@ -62,7 +66,6 @@ class Create extends AbstractChatHandler
         {
             return $this->getError();
         }
-
 
         $this->messageId = $this->db->insert_query('rtchat', [
             'uid' => $uid,
@@ -117,12 +120,15 @@ class Create extends AbstractChatHandler
         }
 
         $row = $messages = [];
+        $row['id'] = $messageId;
         $row['dateline'] = $dateline;
         $row['date'] = my_date('relative', $dateline);
         $row['avatar'] = !empty($this->mybb->user['avatar']) ? htmlspecialchars_uni($this->mybb->user['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
         $row['username'] = isset($this->mybb->user['uid'], $this->mybb->user['username'], $this->mybb->user['usergroup'], $this->mybb->user['displaygroup']) ? build_profile_link(format_name($this->mybb->user['username'], $this->mybb->user['usergroup'], $this->mybb->user['displaygroup']), $this->mybb->user['uid']) : $this->lang->na;
         $row['original_message'] = base64_encode(htmlspecialchars_uni($message));
         $row['message'] = $this->parser->parse_message($message, $parser_options);
+        $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
+        $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
 
         eval("\$message = \"".\rt\Chat\template('chat_message', true)."\";");
         $messages[] =  [

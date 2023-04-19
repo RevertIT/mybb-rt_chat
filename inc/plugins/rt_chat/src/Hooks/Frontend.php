@@ -16,6 +16,7 @@ declare(strict_types=1);
 namespace rt\Chat\Hooks;
 
 use rt\Chat\ChatHandler\Create;
+use rt\Chat\ChatHandler\Delete;
 use rt\Chat\Core;
 use rt\Chat\ChatHandler\Read;
 
@@ -137,8 +138,9 @@ function xmlhttp(): void
         {
             $messages = new Read();
 
+            $loaded_messages = json_decode($mybb->get_input('loaded'));
             header('Content-type: application/json');
-            echo json_encode($messages->getMessages());
+            echo json_encode($messages->getMessages($loaded_messages));
             exit;
         }
 
@@ -160,6 +162,19 @@ function xmlhttp(): void
             $uid = (int) $mybb->user['uid'];
 
             $data = $insert->insertMessage($uid, $mybb->get_input('message'));
+
+            header('Content-type: application/json');
+            echo json_encode($data);
+            exit;
+        }
+
+        // Delete message
+        if ($mybb->get_input('action') === 'delete_message')
+        {
+            $delete = new Delete();
+            $message_id = (int) $mybb->get_input('message');
+
+            $data = $delete->deleteMessage($message_id);
 
             header('Content-type: application/json');
             echo json_encode($data);

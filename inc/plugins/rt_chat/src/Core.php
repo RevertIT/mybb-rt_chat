@@ -23,7 +23,7 @@ class Core
         'description' => 'RT chat development version.',
         'author' => 'RevertIT',
         'authorsite' => 'https://github.com/RevertIT/',
-        'version' => '0.3',
+        'version' => '0.4',
         'compatibility' => '18*',
         'codename' => 'rt_chat',
         'prefix' => 'rt_chat',
@@ -135,11 +135,37 @@ class Core
         return isset($mybb->settings['rt_chat_minposts_chat']) && (int) $mybb->settings['rt_chat_minposts_chat'] > $mybb->user['postnum'];
     }
 
-    public static function is_bot_enabled()
+    /**
+     * Check if bot is enabled
+     *
+     * @return bool
+     */
+    public static function is_bot_enabled(): bool
     {
         global $mybb;
 
         return isset($mybb->settings['rt_chat_bot_enabled']) && (int) $mybb->settings['rt_chat_bot_enabled'] === 1;
+    }
+
+    /**
+     * Check if user is banned from chat
+     *
+     * @return bool
+     */
+    public static function is_banned(): bool
+    {
+        global $mybb, $rt_cache;
+
+        $data = $rt_cache->query("SELECT uid FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800)->execute();
+
+        $uids = array_column((array) $data, 'uid');
+
+        if (in_array($mybb->user['uid'], $uids))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -347,21 +373,21 @@ class Core
             'pgsql' => "CREATE TABLE IF NOT EXISTS ".TABLE_PREFIX."rtchat_bans (
                             id SERIAL PRIMARY KEY,
                             uid INTEGER,
-                            mid INTEGER,
+                            reason TEXT,
                             dateline INTEGER,
                             expires INTEGER,
                         );",
             'sqlite' => "CREATE TABLE IF NOT EXISTS ".TABLE_PREFIX."rtchat_bans (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             uid INTEGER,
-                            mid INTEGER,
+                            reason TEXT,
                             dateline INTEGER,
                             expires INTEGER
                         );",
             default => "CREATE TABLE IF NOT EXISTS ".TABLE_PREFIX."rtchat_bans (
                             id INT NOT NULL AUTO_INCREMENT,
                             uid INT NULL,
-                            mid INT NULL,
+                            reason TEXT NULL,
                             dateline INT NULL,
                             expires INT NULL,
                             PRIMARY KEY(`id`)
@@ -372,7 +398,7 @@ class Core
 
         $db->insert_query('rtchat', [
             'uid' => 1,
-            'message' => 'Hello world!',
+            'message' => 'This is a first message!',
             'dateline' => TIME_NOW,
         ]);
     }

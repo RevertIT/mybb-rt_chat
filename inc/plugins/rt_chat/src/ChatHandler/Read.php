@@ -36,9 +36,10 @@ class Read extends AbstractChatHandler
     /**
      * Get cached list of messages
      *
+     * @param array $loadedMessages
      * @return mixed
      */
-    public function getMessages(): mixed
+    public function getMessages(array $loadedMessages = []): mixed
     {
         global $rt_cache;
 
@@ -93,6 +94,8 @@ class Read extends AbstractChatHandler
                 }
                 $last = $row['id'];
 
+                $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
+                $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
                 $row['dateline'] = $row['dateline'] ?? null;
                 $row['date'] = isset($row['dateline']) ? my_date('relative', $row['dateline']) : null;
                 $row['avatar'] = !empty($row['avatar']) ? htmlspecialchars_uni($row['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
@@ -108,6 +111,8 @@ class Read extends AbstractChatHandler
 
                 $messages[] = [
                     'id' => $row['id'],
+                    'uid' => $row['uid'],
+                    'dateline' => $row['dateline'],
                     'html' => $message,
                 ];
             }
@@ -120,18 +125,36 @@ class Read extends AbstractChatHandler
                 'data' => $data,
             ];
 
-            // Check if we have at least 1 message
-            if (empty($messages))
-            {
-                $final_data['status'] = false;
-                $final_data['error'] = $this->lang->rt_chat_no_messages_found;
-            }
-
             // Set new cache
-            $rt_cache->set(Core::get_plugin_info('prefix') . '_messages', $final_data, 360);
+            $rt_cache->set(Core::get_plugin_info('prefix') . '_messages', $final_data, 604800);
 
             // Return new cache
             $this->messages = $rt_cache->get(Core::get_plugin_info('prefix') . '_messages');
+        }
+
+        // Remove loaded messages
+        $new_messages = [];
+        if (!empty($loadedMessages) && !empty($this->messages['messages']))
+        {
+            foreach ($this->messages['messages'] as $row)
+            {
+                if (in_array($row['id'], $loadedMessages))
+                {
+                    continue;
+                }
+                $new_messages[] = $row;
+            }
+
+            if (empty($new_messages))
+            {
+                $this->messages['status'] = false;
+                $this->messages['error'] = $this->lang->rt_chat_no_new_messages_found;
+                unset($this->messages['data'], $this->messages['messages']);
+            }
+            else
+            {
+                $this->messages['messages'] = $new_messages;
+            }
         }
 
         return $this->messages;
@@ -198,6 +221,8 @@ class Read extends AbstractChatHandler
             }
             $last = $row['id'];
 
+            $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
+            $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
             $row['dateline'] = $row['dateline'] ?? null;
             $row['date'] = isset($row['dateline']) ? my_date('relative', $row['dateline']) : null;
             $row['avatar'] = !empty($row['avatar']) ? htmlspecialchars_uni($row['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
@@ -212,6 +237,8 @@ class Read extends AbstractChatHandler
 
             $messages[] = [
                 'id' => $row['id'],
+                'uid' => $row['uid'],
+                'dateline' => $row['dateline'],
                 'html' => $message,
             ];
         }

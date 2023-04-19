@@ -23,9 +23,11 @@ if (!defined("IN_MYBB"))
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/Core.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/functions.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/AbstractChatHandler.php';
-require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Read.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Create.php';
-require MYBB_ROOT . 'inc/class_parser.php';
+require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Read.php';
+require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Update.php';
+require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Delete.php';
+require_once MYBB_ROOT . 'inc/class_parser.php';
 
 // Hooks manager
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/Hooks/Backend.php';

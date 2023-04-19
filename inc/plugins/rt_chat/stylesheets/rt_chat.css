@@ -6,7 +6,6 @@
     border-radius: 4px;
     overflow: hidden;
 }
-
 .rt_chat-header {
     display: flex;
     justify-content: space-between;
@@ -14,23 +13,19 @@
     background-color: #f5f5f5;
     border-bottom: 1px solid #ccc;
 }
-
 .rt_chat-messages {
     overflow-y: scroll;
     padding: 10px;
     height: 350px;
 }
-
 .rt_chat-message {
     display: flex;
     align-items: flex-start;
     margin-bottom: 10px;
 }
-
 .rt_chat-message-avatar {
     margin-right: 10px;
 }
-
 .rt_chat-message-avatar img {
     display: block;
     width: 50px;
@@ -38,40 +33,38 @@
     border-radius: 50%;
     background: #f5f5f5;
 }
-
 .rt_chat-message-content {
     display: flex;
     flex-direction: column;
 }
-
 .rt_chat-message-meta {
     margin-bottom: 5px;
 }
-
 .rt_chat-message-author {
     font-weight: bold;
 }
-
 .rt_chat-message-timestamp {
     font-size: 12px;
     color: #999;
     margin-left: 10px;
 }
-
 .rt_chat-message-text {
     margin: 0;
     padding: 10px;
     border-radius: 4px;
     background-color: #f5f5f5;
 }
-
+.rt_chat-message-action a {
+    font-size: 11px;
+    color: #999 !important;
+    margin-left: 10px;
+}
 .rt_chat-input {
     display: flex;
     align-items: center;
     padding: 10px;
     background-color: #f5f5f5;
 }
-
 .rt_chat-input input {
     flex: 1;
     margin-right: 10px;

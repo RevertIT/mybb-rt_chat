@@ -10,4 +10,7 @@
         {$row['message']}
         <input type="hidden" name="original_message" value="{$row['original_message']}">
     </div>
+    <div class="rt_chat-message-action">
+        {$row['edit_message']}{$row['delete_message']}
+    </div>
 </div>

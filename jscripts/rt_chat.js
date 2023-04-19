@@ -1,14 +1,14 @@
 /**
- * RT Chat
- *
- * Is a plugin which adds MyBB Chat option, but instead of using Database for CRUD actions,
- * data is stored in cache, this plugin utilizes zero-database-query logic and provides data in the fastest way possible with minimal server resource usage,
- * its required to use in memory cache handlers such as redis or memcache(d)
- *
- * @package rt_chat
- * @author  RevertIT <https://github.com/revertit>
- * @license http://opensource.org/licenses/mit-license.php MIT license
- */
+* RT Chat
+*
+* Is a plugin which adds MyBB Chat option, but instead of using Database for CRUD actions,
+* data is stored in cache, this plugin utilizes zero-database-query logic and provides data in the fastest way possible with minimal server resource usage,
+* its required to use in memory cache handlers such as redis or memcache(d)
+*
+* @package rt_chat
+* @author  RevertIT <https://github.com/revertit>
+* @license http://opensource.org/licenses/mit-license.php MIT license
+*/
 
 let RT_Chat =
 {
@@ -16,17 +16,17 @@ let RT_Chat =
     isActive: true,
     isBottom: true,
     loader: spinner,
+    loadMessagesUrl: rootpath + '/xmlhttp.php?ext=rt_chat&action=load_messages',
+    insertMessageUrl: rootpath + '/xmlhttp.php?ext=rt_chat&action=insert_message',
+    deleteMessageUrl: rootpath + '/xmlhttp.php?ext=rt_chat&action=delete_message',
 
-    fetchMessages: async (url, postData = {}) =>
+    fetchMessages: async (url, postData = []) =>
     {
         let formData = new FormData();
         formData.append('my_post_key', my_post_key);
-        if (postData.length > 0)
+        if (postData)
         {
-            for (let f of postData)
-            {
-                formData.append(f.name, f.value);
-            }
+            formData.append('loaded', JSON.stringify(postData));
         }
         const response = await fetch(url, {
             method: 'post',
@@ -37,7 +37,7 @@ let RT_Chat =
 
         if (result.status === false)
         {
-            throw new Error(result.error);
+            return false;
         }
 
         return result;
@@ -154,8 +154,9 @@ let RT_Chat =
         // Set oldestMessageId to the date of the last message
         RT_Chat.oldestMessageId = result.data.first;
     },
-    load: async (fetchMessagesUrl, selector, awayInterval, refreshTime) =>
+    load: async (selector, awayInterval, refreshTime) =>
     {
+        const selectorClass = selector.replace(/\./g, '');
         let loader = document.querySelector(`${selector}-messages`);
         const milliseconds = refreshTime * 1000;
 
@@ -163,28 +164,35 @@ let RT_Chat =
 
         try
         {
-            const fetch = await RT_Chat.fetchMessages(fetchMessagesUrl);
-            RT_Chat.oldestMessageId = ++fetch.data.last;
+            const fetch = await RT_Chat.fetchMessages(RT_Chat.loadMessagesUrl);
             loader.innerHTML = '';
 
-            RT_Chat.renderMessages(selector, fetch.messages);
-            RT_Chat.checkUserActivity(awayInterval);
-
-            // Interval for new messages
-            setInterval(async () =>
+            if (fetch.status === true)
             {
-                if (RT_Chat.isActive)
-                {
-                    const fetch2 = await RT_Chat.fetchMessages(fetchMessagesUrl);
+                RT_Chat.oldestMessageId = ++fetch.data.last;
 
-                    // If we have a new last id, insert new messages
-                    if (fetch2.data.last !== RT_Chat.oldestMessageId)
+                RT_Chat.renderMessages(selector, fetch.messages);
+                RT_Chat.checkUserActivity(awayInterval);
+
+                // Interval for new messages
+                setInterval(async () =>
+                {
+                    if (RT_Chat.isActive)
                     {
-                        RT_Chat.oldestMessageId = ++fetch2.data.last;
-                        RT_Chat.renderMessages(selector, fetch2.messages);
+                        const fetch2 = await RT_Chat.fetchMessages(RT_Chat.loadMessagesUrl, fetch.data.loaded);
+
+                        if (fetch2.status === true)
+                        {
+                            // If we have a new last id, insert new messages
+                            if (fetch2.data.last !== RT_Chat.oldestMessageId)
+                            {
+                                RT_Chat.oldestMessageId = ++fetch2.data.last;
+                                RT_Chat.renderMessages(selector, fetch2.messages);
+                            }
+                        }
                     }
-                }
-            }, milliseconds);
+                }, milliseconds);
+            }
 
             // Scrolling top
             const chatBox = document.querySelector(`${selector}-messages`);
@@ -192,7 +200,27 @@ let RT_Chat =
             {
                 if (chatBox.scrollTop === 0 && RT_Chat.isActive)
                 {
-                    await RT_Chat.loadMoreMessages(selector, fetchMessagesUrl);
+                    await RT_Chat.loadMoreMessages(selector, RT_Chat.loadMessagesUrl);
+                }
+            });
+
+            // Add listener for insterting message
+            const insertMessage = document.querySelector(`${selector}-insert`);
+            insertMessage.addEventListener('submit', (event) =>
+            {
+                event.preventDefault();
+                RT_Chat.insertMessage(RT_Chat.insertMessageUrl, selector);
+            });
+
+            const messageAction = document.querySelector(`${selector}-message-action`);
+            // Add listener for message actions
+            messageAction.addEventListener('click', (event) =>
+            {
+                event.preventDefault();
+                const target = event.target;
+                if (target.classList.contains(`${selectorClass}-delete`))
+                {
+                    RT_Chat.deleteMessage(RT_Chat.deleteMessageUrl, selector, target.id);
                 }
             });
         }
@@ -201,10 +229,8 @@ let RT_Chat =
             console.log(`RT Chat Error: ${e}`);
         }
     },
-    insertMessage: async (url, selector, e = event) =>
+    insertMessage: async (url, selector) =>
     {
-        e.preventDefault();
-
         const message = document.querySelector(selector + '-input input[name="message"]').value;
         const myPostKey = document.querySelector(selector + '-input input[name="my_post_key"]').value;
 
@@ -222,13 +248,46 @@ let RT_Chat =
 
         if (!result.status)
         {
-            alert(result.error);
+            $(".jGrowl").jGrowl("close");
+            $.jGrowl(result.error, {theme:'jgrowl_error'});
         }
         else
         {
             document.querySelector(selector + '-input input[name="message"]').value = '';
             RT_Chat.oldestMessageId = ++result.data.last;
             RT_Chat.renderMessages(selector, result.messages);
+        }
+    },
+    deleteMessage: async(url, selector, id) =>
+    {
+        let deleteConfirm = confirm("Are you sure you want to delete this?");
+
+        if (deleteConfirm === false)
+        {
+            return false;
+        }
+
+        // Create a new form data object
+        const formData = new FormData();
+        formData.append('message', id);
+        formData.append('my_post_key', my_post_key);
+
+        const response = await fetch(url, {
+            method: 'post',
+            body: formData,
+        });
+
+        const result = await response.json();
+
+        if (!result.status)
+        {
+            $(".jGrowl").jGrowl("close");
+            $.jGrowl(result.error, {theme:'jgrowl_error'});
+        }
+        else
+        {
+            let message = document.querySelector(`${selector}-messages > [id="${id}"]`);
+            message.parentNode.removeChild(message);
         }
     }
 }
