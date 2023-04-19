@@ -29,7 +29,8 @@ Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system whe
 - Set refresh time
 - Set away time (Ajax won't be called when user is afk)
 - Supports BBCodes and Smilies
-- Min message length
+- Max message length
+- Edit/delete messages
 - Groups which can access chat
 - Separated chat page at _/misc.php?ext=rt_chat_
 - and many more features.
