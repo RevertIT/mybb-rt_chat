@@ -43,14 +43,14 @@ class Create extends AbstractChatHandler
         {
             $this->error($this->lang->rt_chat_no_perms);
         }
+        if (Core::is_banned())
+        {
+            $this->error($this->lang->rt_chat_banned);
+        }
         if (!Core::can_post() && !Core::can_moderate())
         {
             $this->lang->rt_chat_no_posts = $this->lang->sprintf($this->lang->rt_chat_no_posts, (int) $this->mybb->settings['rt_chat_minposts_chat'], $this->mybb->user['postnum']);
             $this->error($this->lang->rt_chat_no_posts);
-        }
-        if (Core::is_banned())
-        {
-            $this->error($this->lang->rt_chat_banned);
         }
         if (empty($message))
         {
@@ -81,67 +81,5 @@ class Create extends AbstractChatHandler
             $this->db->escape_string($message),
             TIME_NOW
         );
-    }
-
-    /**
-     * Generate a mockup to render latest message in the chat
-     *
-     * @param int $messageId
-     * @param int $uid
-     * @param string $message
-     * @param int $dateline
-     * @return bool|array
-     */
-    private function renderTemplate(int $messageId, int $uid, string $message, int $dateline): bool|array
-    {
-        if (empty($messageId))
-        {
-            return false;
-        }
-
-        // Parse bbcodes
-        $parser_options = [
-            "allow_html" => 0,
-            "allow_mycode" => 0,
-            "allow_smilies" => 0,
-            "allow_imgcode" => 0,
-            "allow_videocode" => 0,
-            "filter_badwords" => 1,
-            "filter_cdata" => 1
-        ];
-
-        if (isset($this->mybb->settings['rt_chat_mycode_enabled']) && (int) $this->mybb->settings['rt_chat_mycode_enabled'] === 1)
-        {
-            $parser_options['allow_mycode'] = 1;
-        }
-        if (isset($this->mybb->settings['rt_chat_smilies_enabled']) && (int) $this->mybb->settings['rt_chat_smilies_enabled'] === 1)
-        {
-            $parser_options['allow_smilies'] = 1;
-        }
-
-        $row = $messages = [];
-        $row['id'] = $messageId;
-        $row['dateline'] = $dateline;
-        $row['date'] = my_date('relative', $dateline);
-        $row['avatar'] = !empty($this->mybb->user['avatar']) ? htmlspecialchars_uni($this->mybb->user['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
-        $row['username'] = isset($this->mybb->user['uid'], $this->mybb->user['username'], $this->mybb->user['usergroup'], $this->mybb->user['displaygroup']) ? build_profile_link(format_name($this->mybb->user['username'], $this->mybb->user['usergroup'], $this->mybb->user['displaygroup']), $this->mybb->user['uid']) : $this->lang->na;
-        $row['original_message'] = base64_encode(htmlspecialchars_uni($message));
-        $row['message'] = $this->parser->parse_message($message, $parser_options);
-        $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
-        $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
-
-        eval("\$message = \"".\rt\Chat\template('chat_message', true)."\";");
-        $messages[] =  [
-            'id' => $messageId,
-            'html' => $message,
-        ];
-
-        return [
-            'status' => true,
-            'messages' => $messages,
-            'data' => [
-                'last' => $messageId,
-            ]
-        ];
     }
 }

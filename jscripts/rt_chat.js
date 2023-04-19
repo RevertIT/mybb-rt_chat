@@ -16,8 +16,8 @@ let RT_Chat =
     isActive: true,
     isBottom: true,
     loader: spinner,
+    insertUpdateMessageUrl: rootpath + '/xmlhttp.php?ext=rt_chat&action=insert_update_message',
     loadMessagesUrl: rootpath + '/xmlhttp.php?ext=rt_chat&action=load_messages',
-    insertMessageUrl: rootpath + '/xmlhttp.php?ext=rt_chat&action=insert_message',
     deleteMessageUrl: rootpath + '/xmlhttp.php?ext=rt_chat&action=delete_message',
 
     fetchMessages: async (url, postData = []) =>
@@ -54,7 +54,7 @@ let RT_Chat =
         for (let m of messages)
         {
             // Find message id
-            const messageDiv = chatBox.querySelector(`[id="${m.id}"]`);
+            const messageDiv = chatBox.querySelector(`${selector}-message[id="${m.id}"]`);
             if (messageDiv)
             {
                 // Update the message if its HTML has changed
@@ -127,7 +127,7 @@ let RT_Chat =
         for (let m of result.messages)
         {
             // Find message id
-            const messageDiv = chatBox.querySelector(`[id="${m.id}"]`);
+            const messageDiv = chatBox.querySelector(`${selector}-message[id="${m.id}"]`);
 
             if (messageDiv)
             {
@@ -209,18 +209,21 @@ let RT_Chat =
             insertMessage.addEventListener('submit', (event) =>
             {
                 event.preventDefault();
-                RT_Chat.insertMessage(RT_Chat.insertMessageUrl, selector);
+                RT_Chat.insertMessage(RT_Chat.insertUpdateMessageUrl, selector);
             });
 
-            const messageAction = document.querySelector(`${selector}-message-action`);
             // Add listener for message actions
-            messageAction.addEventListener('click', (event) =>
+            document.addEventListener('click', (event) =>
             {
-                event.preventDefault();
                 const target = event.target;
                 if (target.classList.contains(`${selectorClass}-delete`))
                 {
                     RT_Chat.deleteMessage(RT_Chat.deleteMessageUrl, selector, target.id);
+                }
+
+                if (target.classList.contains(`${selectorClass}-edit`))
+                {
+                    RT_Chat.editMessage(selector, target.id);
                 }
             });
         }
@@ -233,11 +236,13 @@ let RT_Chat =
     {
         const message = document.querySelector(selector + '-input input[name="message"]').value;
         const myPostKey = document.querySelector(selector + '-input input[name="my_post_key"]').value;
+        const editId = document.querySelector(selector + '-input input[name="edit_id"]').value;
 
         // Create a new form data object
         const formData = new FormData();
         formData.append('message', message);
         formData.append('my_post_key', myPostKey);
+        formData.append('edit_id', editId);
 
         const response = await fetch(url, {
             method: 'post',
@@ -254,6 +259,7 @@ let RT_Chat =
         else
         {
             document.querySelector(selector + '-input input[name="message"]').value = '';
+            document.querySelector(selector + '-input > input[name="edit_id"]').value = '';
             RT_Chat.oldestMessageId = ++result.data.last;
             RT_Chat.renderMessages(selector, result.messages);
         }
@@ -289,5 +295,17 @@ let RT_Chat =
             let message = document.querySelector(`${selector}-messages > [id="${id}"]`);
             message.parentNode.removeChild(message);
         }
+    },
+    editMessage: async (selector, id) =>
+    {
+        // Set edit id
+        document.querySelector(selector + '-input > input[name="edit_id"]').value = id;
+
+        // Get message content
+        let messageToEdit = document.querySelector(`${selector}-message[id="${id}"] ${selector}-message-text > input[name="original_message"]`).value;
+        messageToEdit = atob(messageToEdit);
+
+        document.querySelector(selector + '-input > input[name="message"]').value = messageToEdit;
+        document.querySelector(selector + '-input > input[name="message"]').focus();
     }
 }

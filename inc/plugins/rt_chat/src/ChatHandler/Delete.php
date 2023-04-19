@@ -19,41 +19,41 @@ use rt\Chat\Core;
 
 class Delete extends AbstractChatHandler
 {
-	public function deleteMessage(int $messageId): array|bool
-	{
-		global $rt_cache;
+    public function deleteMessage(int $messageId): array|bool
+    {
+        global $rt_cache;
 
-		if ($this->mybb->user['uid'] < 1)
-		{
-			$this->error($this->lang->rt_chat_not_logged_in);
-		}
-		if (!Core::can_view())
-		{
-			$this->error($this->lang->rt_chat_no_perms);
-		}
+        if ($this->mybb->user['uid'] < 1)
+        {
+            $this->error($this->lang->rt_chat_not_logged_in);
+        }
+        if (!Core::can_view())
+        {
+            $this->error($this->lang->rt_chat_no_perms);
+        }
         if (Core::is_banned())
         {
             $this->error($this->lang->rt_chat_banned);
         }
 
-		$query = $this->db->simple_select('rtchat', 'uid', "id = '{$this->db->escape_string($messageId)}'");
-		$row = $this->db->fetch_field($query, 'uid');
+        $query = $this->db->simple_select('rtchat', 'uid', "id = '{$this->db->escape_string($messageId)}'");
+        $row = $this->db->fetch_field($query, 'uid');
 
-		if (empty($row) || isset($row['uid']) && $row['uid'] !== $this->mybb->user['uid'] && !Core::can_moderate())
-		{
-			$this->error($this->lang->rt_chat_selected_message_not_found);
-		}
+        if (empty($row) || isset($row['uid']) && $row['uid'] !== $this->mybb->user['uid'] && !Core::can_moderate())
+        {
+            $this->error($this->lang->rt_chat_selected_message_not_found);
+        }
 
-		if (!empty($this->getError()))
-		{
-			return $this->getError();
-		}
+        if (!empty($this->getError()))
+        {
+            return $this->getError();
+        }
 
-		$this->db->delete_query('rtchat', "id = '{$this->db->escape_string($messageId)}'");
-		$rt_cache->delete(Core::get_plugin_info('prefix') . '_messages');
+        $this->db->delete_query('rtchat', "id = '{$this->db->escape_string($messageId)}'");
+        $rt_cache->delete(Core::get_plugin_info('prefix') . '_messages');
 
-		return [
-			'status' => true,
-		];
-	}
+        return [
+            'status' => true,
+        ];
+    }
 }

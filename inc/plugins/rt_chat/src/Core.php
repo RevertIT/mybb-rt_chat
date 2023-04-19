@@ -190,12 +190,15 @@ class Core
      */
     public static function remove_cache(): void
     {
-        global $cache;
+        global $cache, $rt_cache;
 
         if (!empty($cache->read(self::PLUGIN_DETAILS['prefix'])))
         {
             $cache->delete(self::PLUGIN_DETAILS['prefix']);
         }
+
+        $rt_cache->delete(get_rt_cache_query_name('rt_chat_bacheck'));
+        $rt_cache->delete('rt_chat_messages');
     }
 
     /**

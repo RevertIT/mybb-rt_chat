@@ -17,6 +17,7 @@ namespace rt\Chat\Hooks;
 
 use rt\Chat\ChatHandler\Create;
 use rt\Chat\ChatHandler\Delete;
+use rt\Chat\ChatHandler\Update;
 use rt\Chat\Core;
 use rt\Chat\ChatHandler\Read;
 
@@ -134,7 +135,9 @@ function xmlhttp(): void
     {
 
         // View messages in chat
-        if ($mybb->get_input('action') === 'load_messages' && empty($mybb->get_input('before')))
+        if ($mybb->get_input('action') === 'load_messages' &&
+            empty($mybb->get_input('before'))
+        )
         {
             $messages = new Read();
 
@@ -156,13 +159,27 @@ function xmlhttp(): void
         }
 
         // Insert message
-        if ($mybb->get_input('action') === 'insert_message')
+        if ($mybb->get_input('action') === 'insert_update_message' && empty($mybb->get_input('edit_id')))
         {
             $insert = new Create();
             $uid = (int) $mybb->user['uid'];
 
             $data = $insert->insertMessage($uid, $mybb->get_input('message'));
 
+            header('Content-type: application/json');
+            echo json_encode($data);
+            exit;
+        }
+
+        // Update message
+        if ($mybb->get_input('edit_id', \MyBB::INPUT_INT) !== 0)
+        {
+            $edit = new Update();
+
+            $message_id = $mybb->get_input('edit_id', \MyBB::INPUT_INT);
+            $message = $mybb->get_input('message');
+
+            $data = $edit->updateMessage($message_id, $message);
             header('Content-type: application/json');
             echo json_encode($data);
             exit;
