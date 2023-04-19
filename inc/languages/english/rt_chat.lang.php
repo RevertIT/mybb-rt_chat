@@ -18,3 +18,4 @@ $l['rt_chat_edit'] = 'Edit';
 $l['rt_chat_delete'] = 'Delete';
 $l['rt_chat_selected_message_not_found'] = 'The selected message was not found';
 $l['rt_chat_banned'] = 'You are banned from using the chat';
+$l['rt_chat_message_same'] = 'Your message must not be the same while editing';
