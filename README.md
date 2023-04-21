@@ -10,7 +10,7 @@ Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system whe
 3. [➕ Installation](#-installation)
 4. [🔼 Update](#-update)
 5. [➖ Removal](#-removal)
-6. [Usage](#usage)
+6. [📜 Usage](#-usage)
 7. [💡 Feature request](#-feature-request)
 8. [🙏 Questions](#-questions)
 9. [🐞 Bug reports](#-bug-reports)
@@ -50,7 +50,7 @@ Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system whe
 1. Uninstall the plugin from your plugin manager.
 2. _Optional:_ Delete all the RT Chat plugin files from your MyBB folder.
 
-### Usage
+### 📜 Usage
 #### Chat actions
 All chat actions are case-insensitive.
 
