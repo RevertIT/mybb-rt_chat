@@ -139,6 +139,6 @@ class ChatActions extends AbstractChatHandler
             }
         }
 
-        return true;
+        return false;
     }
 }
