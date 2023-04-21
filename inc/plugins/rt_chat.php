@@ -23,6 +23,7 @@ if (!defined("IN_MYBB"))
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/Core.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/functions.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/AbstractChatHandler.php';
+require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatActions.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Create.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Read.php';
 require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Update.php';
@@ -30,7 +31,10 @@ require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Delete.php';
 require_once MYBB_ROOT . 'inc/class_parser.php';
 
 // Hooks manager
-require MYBB_ROOT . 'inc/plugins/rt_chat/src/Hooks/Backend.php';
+if(defined('IN_ADMINCP'))
+{
+    require MYBB_ROOT . 'inc/plugins/rt_chat/src/Hooks/Backend.php';
+}
 
 if (\rt\Chat\Core::is_enabled())
 {
@@ -42,16 +46,7 @@ if (\rt\Chat\Core::is_enabled())
 
 function rt_chat_info(): array
 {
-    return [
-        'name' => \rt\Chat\Core::get_plugin_info('name'),
-        'description' => \rt\Chat\Core::get_plugin_description(),
-        'website' => \rt\Chat\Core::get_plugin_info('website'),
-        'author' => \rt\Chat\Core::get_plugin_info('author'),
-        'authorsite' => \rt\Chat\Core::get_plugin_info('authorsite'),
-        'version' => \rt\Chat\Core::get_plugin_info('version'),
-        'compatibility' => \rt\Chat\Core::get_plugin_info('compatibility'),
-        'codename' => \rt\Chat\Core::get_plugin_info('codename'),
-    ];
+    return \rt\Chat\Core::PLUGIN_DETAILS;
 }
 
 function rt_chat_install(): void

@@ -95,6 +95,13 @@ class AbstractChatHandler
             return false;
         }
 
+        $user = get_user($uid);
+
+        if (empty($user))
+        {
+            return false;
+        }
+
         // Parse bbcodes
         $parser_options = [
             "allow_html" => 0,
@@ -120,7 +127,7 @@ class AbstractChatHandler
         $row['dateline'] = $dateline;
         $row['date'] = my_date('relative', $dateline);
         $row['avatar'] = !empty($this->mybb->user['avatar']) ? htmlspecialchars_uni($this->mybb->user['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
-        $row['username'] = isset($this->mybb->user['uid'], $this->mybb->user['username'], $this->mybb->user['usergroup'], $this->mybb->user['displaygroup']) ? build_profile_link(format_name($this->mybb->user['username'], $this->mybb->user['usergroup'], $this->mybb->user['displaygroup']), $this->mybb->user['uid']) : $this->lang->na;
+        $row['username'] = isset($user['uid'], $user['username'], $user['usergroup'], $user['displaygroup']) ? build_profile_link(format_name($user['username'], $user['usergroup'], $user['displaygroup']), $user['uid']) : $this->lang->na;
         $row['original_message'] = base64_encode(htmlspecialchars_uni($message));
         $row['message'] = $this->parser->parse_message($message, $parser_options);
         $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';

@@ -15,9 +15,10 @@ declare(strict_types=1);
 
 namespace rt\Chat\ChatHandler;
 
+use rt\Chat\ChatActions;
 use rt\Chat\Core;
 
-class Create extends AbstractChatHandler
+class Create extends ChatActions
 {
     private int $messageId;
 
@@ -31,9 +32,16 @@ class Create extends AbstractChatHandler
      */
     public function insertMessage(int $uid, string $message, bool $overrideChecks = false): array|bool
     {
-        global $rt_cache;
+        global $rt_cache, $plugins;
 
         $message = trim_blank_chrs($message);
+
+        $data = [
+            'uid' => $uid,
+            'message' => $message,
+            'overrideChecks' => $overrideChecks,
+        ];
+        $plugins->run_hooks('rt_chat_begin_message_insert', $data);
 
         if ($this->mybb->user['uid'] < 1)
         {
@@ -62,6 +70,26 @@ class Create extends AbstractChatHandler
             $this->error($this->lang->rt_chat_too_long_msg);
         }
 
+        // Moderator actions
+        if (Core::can_moderate())
+        {
+            switch (true)
+            {
+                case $this->banUser($message):
+                    $uid = (int) $this->mybb->settings['rt_chat_bot_id'];
+                    $message = $this->lang->rt_chat_banned_message;
+                    break;
+                case $this->unbanUser($message):
+                    $uid = (int) $this->mybb->settings['rt_chat_bot_id'];
+                    $message = $this->lang->rt_chat_unbanned_message;
+                    break;
+                case $this->clearChat($message):
+                    $uid = (int) $this->mybb->settings['rt_chat_bot_id'];
+                    $message = $this->lang->rt_chat_cleared_messages;
+                    break;
+            }
+        }
+
         if (!empty($this->getError()) && $overrideChecks === false)
         {
             return $this->getError();
@@ -73,12 +101,16 @@ class Create extends AbstractChatHandler
             'dateline' => TIME_NOW,
         ]);
 
+        $data['message_id'] = (int) $this->messageId;
+
+        $plugins->run_hooks('rt_chat_commit_message_insert', $data);
+
         $rt_cache->delete(Core::get_plugin_info('prefix') . '_messages');
 
         return $this->renderTemplate(
             (int) $this->messageId,
-            (int) $this->mybb->user['uid'],
-            $this->db->escape_string($message),
+            $uid,
+            $message,
             TIME_NOW
         );
     }

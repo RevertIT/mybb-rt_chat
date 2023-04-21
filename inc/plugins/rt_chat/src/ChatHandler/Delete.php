@@ -21,7 +21,9 @@ class Delete extends AbstractChatHandler
 {
     public function deleteMessage(int $messageId): array|bool
     {
-        global $rt_cache;
+        global $rt_cache, $plugins;
+
+        $plugins->run_hooks('rt_chat_begin_message_delete', $messageId);
 
         if ($this->mybb->user['uid'] < 1)
         {
@@ -50,6 +52,9 @@ class Delete extends AbstractChatHandler
         }
 
         $this->db->delete_query('rtchat', "id = '{$this->db->escape_string($messageId)}'");
+
+        $plugins->run_hooks('rt_chat_commit_message_delete', $messageId);
+
         $rt_cache->delete(Core::get_plugin_info('prefix') . '_messages');
 
         return [

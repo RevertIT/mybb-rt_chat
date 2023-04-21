@@ -1,4 +1,5 @@
 <?php
+
 $l['rt_chat_enter_message'] = 'Enter your message...';
 $l['rt_chat_send'] = 'Send';
 $l['rt_chat_name'] = 'RT Chat (Change in language file)';
@@ -19,3 +20,10 @@ $l['rt_chat_delete'] = 'Delete';
 $l['rt_chat_selected_message_not_found'] = 'The selected message was not found';
 $l['rt_chat_banned'] = 'You are banned from using the chat';
 $l['rt_chat_message_same'] = 'Your message must not be the same while editing';
+$l['rt_chat_banned_message'] = 'The user {1} has been banned with a reason "{2}" for {3} minutes by {4}';
+$l['rt_chat_unbanned_message'] = 'The user {1} has been unbanned by {2}';
+$l['rt_chat_ban_time_short'] = 'When banning an user, insert ban time to be longer than 5 minutes';
+$l['rt_chat_moderate_user_not_found'] = 'The user you are trying to moderate does not exist';
+$l['rt_chat_ban_user_same_id'] = 'You can not ban yourself';
+$l['rt_chat_moderate_user_not_banned'] = 'The user is not banned';
+$l['rt_chat_cleared_messages'] = 'The chat has been cleared by {1}';

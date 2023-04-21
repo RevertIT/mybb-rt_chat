@@ -209,13 +209,25 @@ function xmlhttp(): void
  */
 function task_hourlycleanup(&$args): void
 {
-    global $mybb, $db;
+    global $mybb, $db, $rt_cache;
 
     if (isset($mybb->settings['rt_chat_clear_after']) && (int) $mybb->settings['rt_chat_clear_after'] > 0)
     {
         $rt_chat_deletion_time = TIME_NOW - (60 * 60 * 24 * (int) $mybb->settings['rt_chat_clear_after']);
 
         $db->delete_query("rtchat", "dateline < '{$rt_chat_deletion_time}'");
+    }
+
+    // Delete expired bans
+    $rt_chat_clear = $db->delete_query("rtchat_bans", "dateline > expires");
+    {
+        $rt_chat_num_deleted = (int) $db->affected_rows($rt_chat_clear);
+
+        if ($rt_chat_num_deleted >= 1)
+        {
+            $rt_cache->query('')->delete('rt_chat_bacheck');
+            $rt_cache->query("SELECT uid FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800);
+        }
     }
 }
 

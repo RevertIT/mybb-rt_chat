@@ -41,7 +41,9 @@ class Read extends AbstractChatHandler
      */
     public function getMessages(array $loadedMessages = []): mixed
     {
-        global $rt_cache;
+        global $rt_cache, $plugins;
+
+        $plugins->run_hooks('rt_chat_begin_message_view', $loadedMessages);
 
         // Parse bbcodes
         $parser_options = [
@@ -157,6 +159,8 @@ class Read extends AbstractChatHandler
             }
         }
 
+        $plugins->run_hooks('rt_chat_end_message_view', $this->messages);
+
         return $this->messages;
     }
 
@@ -168,7 +172,9 @@ class Read extends AbstractChatHandler
      */
     public function getMessageBeforeId(int $messageId): array
     {
-        global $rt_cache;
+        global $rt_cache, $plugins;
+
+        $plugins->run_hooks('rt_chat_begin_message_view_with_id', $messageId);
 
         if (!Core::can_view_history())
         {
@@ -258,6 +264,8 @@ class Read extends AbstractChatHandler
             $final_data['error'] = $this->lang->rt_chat_no_messages_found;
             unset($final_data['data'], $final_data['messages']);
         }
+
+        $plugins->run_hooks('rt_chat_end_message_view_with_id', $final_data);
 
         return $final_data;
     }

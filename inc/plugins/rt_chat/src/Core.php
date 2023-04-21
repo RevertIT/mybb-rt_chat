@@ -17,13 +17,13 @@ namespace rt\Chat;
 
 class Core
 {
-    private const PLUGIN_DETAILS = [
-        'name' => 'RT Chat <span style="color: red">(Experimental)</span>',
+    public const PLUGIN_DETAILS = [
+        'name' => 'RT Chat (Release Candidate 1)',
         'website' => 'https://github.com/RevertIT/mybb-rt_chat',
-        'description' => 'RT chat development version.',
+        'description' => 'RT Chat is a modern and responsive MyBB chat plugin which utilizes MyBB cache system when retrieving messages via ajax.',
         'author' => 'RevertIT',
         'authorsite' => 'https://github.com/RevertIT/',
-        'version' => '0.4',
+        'version' => '0.5',
         'compatibility' => '18*',
         'codename' => 'rt_chat',
         'prefix' => 'rt_chat',
@@ -379,13 +379,15 @@ class Core
                             reason TEXT,
                             dateline INTEGER,
                             expires INTEGER,
+                            UNIQUE KEY uid (uid),
                         );",
             'sqlite' => "CREATE TABLE IF NOT EXISTS ".TABLE_PREFIX."rtchat_bans (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            uid INTEGER,
+                            uid INTEGER UNIQUE,
                             reason TEXT,
                             dateline INTEGER,
-                            expires INTEGER
+                            expires INTEGER,
+                            UNIQUE (uid) ON CONFLICT REPLACE
                         );",
             default => "CREATE TABLE IF NOT EXISTS ".TABLE_PREFIX."rtchat_bans (
                             id INT NOT NULL AUTO_INCREMENT,
@@ -393,7 +395,8 @@ class Core
                             reason TEXT NULL,
                             dateline INT NULL,
                             expires INT NULL,
-                            PRIMARY KEY(`id`)
+                            PRIMARY KEY(id),
+                            UNIQUE (uid)
                         ) ENGINE = InnoDB;"
         };
 

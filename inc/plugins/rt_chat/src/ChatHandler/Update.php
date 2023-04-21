@@ -28,7 +28,13 @@ class Update extends AbstractChatHandler
      */
     public function updateMessage(int $messageId, string $message): bool|array
     {
-        global $rt_cache;
+        global $rt_cache, $plugins;
+
+        $data = [
+            'messageId' => $messageId,
+            'message' => $message,
+        ];
+        $plugins->run_hooks('rt_chat_begin_message_update', $data);
 
         if ($this->mybb->user['uid'] < 1)
         {
@@ -68,6 +74,8 @@ class Update extends AbstractChatHandler
         $this->db->update_query('rtchat', [
             'message' => $this->db->escape_string($message),
         ], "id = '{$this->db->escape_string($messageId)}'");
+
+        $plugins->run_hooks('rt_chat_commit_message_update', $data);
 
         $rt_cache->delete(Core::get_plugin_info('prefix') . '_messages');
 

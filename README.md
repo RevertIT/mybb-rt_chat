@@ -10,10 +10,11 @@ Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system whe
 3. [➕ Installation](#-installation)
 4. [🔼 Update](#-update)
 5. [➖ Removal](#-removal)
-6. [💡 Feature request](#-feature-request)
-7. [🙏 Questions](#-questions)
-8. [🐞 Bug reports](#-bug-reports)
-9. [📷 Preview](#-preview)
+6. [Usage](#usage)
+7. [💡 Feature request](#-feature-request)
+8. [🙏 Questions](#-questions)
+9. [🐞 Bug reports](#-bug-reports)
+10. [📷 Preview](#-preview)
 
 ### ❗ Dependencies
 - MyBB 1.8.x
@@ -25,10 +26,11 @@ Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system whe
 - Responsive design (CSS, templates, and settings included)
 - Ajax chat with cached messages. (**No database stress!**)
 - Chat bot (Get configurable notifications from bot in chat)
+- Chat actions like (/clear, /ban, /unban)
 - Infinite scroll for older messages
 - Set refresh time
 - Set away time (Ajax won't be called when user is afk)
-- Supports BBCodes and Smilies
+- Supports BBCodes and Smiles
 - Max message length
 - Edit/delete messages
 - Groups which can access chat
@@ -47,6 +49,28 @@ Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system whe
 ### ➖ Removal
 1. Uninstall the plugin from your plugin manager.
 2. _Optional:_ Delete all the RT Chat plugin files from your MyBB folder.
+
+### Usage
+#### Chat actions
+All chat actions are case-insensitive.
+
+- **Ban user via chat action**
+```php
+/ban "username" "ban reason" 60
+```
+Will ban the user with username `username` and set reason as `ban reason` for `60` minutes.
+
+- **Unban user via chat action**
+```php
+/unban "username"
+```
+Will unban the user with username `username`.
+
+- **Clear chat via chat action**
+```php
+/clear
+```
+Will clear all the chat messages.
 
 ### 💡 Feature request
 Open a new idea by [clicking here](https://github.com/RevertIT/mybb-rt_chat/discussions/new?category=ideas)
