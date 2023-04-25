@@ -132,19 +132,158 @@ function template(string $name, bool $modal = false): string
  */
 function check_php_version(): void
 {
-    if (version_compare(PHP_VERSION, '8.1.0', '<'))
+    if (version_compare(PHP_VERSION, '8.0.0', '<'))
     {
-        flash_message("PHP version must be at least 8.1 due to security reasons.", "error");
+        flash_message("PHP version must be at least 8.0.x due to security reasons.", "error");
         admin_redirect("index.php?module=config-plugins");
     }
 }
 
 /**
- * PluginLibrary check loader
+ * RT Extended cache loader
+ *
+ * @return void
+ */
+function load_rt_extendedcache(): void
+{
+    global $rt_cache, $config, $mybb;
+
+    if (!defined('RT_EXTENDEDCACHE'))
+    {
+        define('RT_EXTENDEDCACHE', MYBB_ROOT . 'inc/plugins/rt_extendedcache.php');
+    }
+
+    if (file_exists(RT_EXTENDEDCACHE))
+    {
+        if (!$rt_cache)
+        {
+            require_once RT_EXTENDEDCACHE;
+        }
+        if (version_compare((string) $rt_cache->version, '2', '<'))
+        {
+            Core::$PLUGIN_DETAILS['description'] .= <<<DESC
+			<br/>
+			<b style="color: orange">
+				<img src="{$mybb->settings['bburl']}/{$config['admin_dir']}/styles/default/images/icons/warning.png" alt="">
+				RT Extended Cache (ver-{$rt_cache->version}) is outdated. You can update it by <a href="https://community.mybb.com/mods.php?action=view&pid=1558" target="_blank">clicking here</a>.
+			</b>
+			DESC;
+        }
+        else
+        {
+            Core::$PLUGIN_DETAILS['description'] .= <<<DESC
+			<br/>
+			<b style="color: green">
+				<img src="{$mybb->settings['bburl']}/{$config['admin_dir']}/styles/default/images/icons/tick.png" alt="">
+				RT Extended Cache (ver-{$rt_cache->version}) is installed.
+			</b>
+			DESC;
+        }
+    }
+    else
+    {
+        Core::$PLUGIN_DETAILS['description'] .= <<<DESC
+		<br/>
+		<b style="color: orange">
+			<img src="{$mybb->settings['bburl']}/{$config['admin_dir']}/styles/default/images/icons/warning.png" alt="">
+			RT Extended Cache is missing. You can download it by <a href="https://community.mybb.com/mods.php?action=view&pid=1558" target="_blank">clicking here</a>.
+		</b>
+		DESC;
+    }
+}
+
+/**
+ * RT Extended cache install checker
+ *
+ * @return void
+ */
+function check_rt_extendedcache(): void
+{
+    global $rt_cache;
+
+    if (!defined('RT_EXTENDEDCACHE'))
+    {
+        define('RT_EXTENDEDCACHE', MYBB_ROOT . 'inc/plugins/rt_extendedcache.php');
+    }
+
+    if (file_exists(RT_EXTENDEDCACHE))
+    {
+        if (!$rt_cache)
+        {
+            require_once RT_EXTENDEDCACHE;
+        }
+        if (version_compare((string) $rt_cache->version, '2', '<'))
+        {
+            flash_message("RT Extended Cache version is outdated. You can update it by <a href=\"https://community.mybb.com/mods.php?action=view&pid=1558\">clicking here</a>.", "error");
+            admin_redirect("index.php?module=config-plugins");
+        }
+    }
+    else
+    {
+        flash_message("RT Extended Cache is missing. You can download it by <a href=\"https://community.mybb.com/mods.php?action=view&pid=1558\">clicking here</a>.", "error");
+        admin_redirect("index.php?module=config-plugins");
+    }
+}
+
+/**
+ * PluginLibrary loader
  *
  * @return void
  */
 function load_pluginlibrary(): void
+{
+    global $PL, $config, $mybb;
+
+    if (!defined('PLUGINLIBRARY'))
+    {
+        define('PLUGINLIBRARY', MYBB_ROOT . 'inc/plugins/pluginlibrary.php');
+    }
+
+    if (file_exists(PLUGINLIBRARY))
+    {
+        if (!$PL)
+        {
+            require_once PLUGINLIBRARY;
+        }
+        if (version_compare((string) $PL->version, '13', '<'))
+        {
+            Core::$PLUGIN_DETAILS['description'] .= <<<DESC
+			<br/>
+			<b style="color: orange">
+				<img src="{$mybb->settings['bburl']}/{$config['admin_dir']}/styles/default/images/icons/warning.png" alt="">
+				PluginLibrary version is outdated. You can update it by <a href="https://community.mybb.com/mods.php?action=view&pid=573" target="_blank">clicking here</a>.
+			</b>
+			DESC;
+        }
+        else
+        {
+            Core::$PLUGIN_DETAILS['description'] .= <<<DESC
+			<br/>
+			<b style="color: green">
+				<img src="{$mybb->settings['bburl']}/{$config['admin_dir']}/styles/default/images/icons/tick.png" alt="">
+				PluginLibrary (ver-{$PL->version}) is installed.
+			</b>
+			DESC;
+        }
+    }
+    else
+    {
+        Core::$PLUGIN_DETAILS['description'] .= <<<DESC
+		<br/>
+		<b style="color: orange">
+			<img src="{$mybb->settings['bburl']}/{$config['admin_dir']}/styles/default/images/icons/warning.png" alt="">
+			PluginLibrary is missing. You can download it by <a href="https://community.mybb.com/mods.php?action=view&pid=573" target="_blank">clicking here</a>.
+		</b>
+		DESC;
+    }
+}
+
+/**
+ * PluginLibrary install checker
+ *
+ * @return void
+ */
+function check_pluginlibrary(): void
 {
     global $PL;
 
@@ -173,38 +312,41 @@ function load_pluginlibrary(): void
 }
 
 /**
- * RT Extended cache check loader
+ * Plugin version loader
  *
  * @return void
  */
-function load_rt_extendedcache(): void
+function load_plugin_version(): void
 {
-    global $rt_cache;
+    global $cache, $mybb, $config;
 
-    if (!defined('RT_EXTENDEDCACHE'))
+    $cached_version = $cache->read(Core::get_plugin_info('prefix'));
+    $current_version = Core::get_plugin_info('version');
+
+    if (isset($cached_version['version'], $current_version))
     {
-        define('RT_EXTENDEDCACHE', MYBB_ROOT . 'inc/plugins/rt_extendedcache.php');
-    }
-    require_once RT_EXTENDEDCACHE;
-
-
-    if (file_exists(RT_EXTENDEDCACHE))
-    {
-        if (!$rt_cache)
+        if (version_compare($cached_version['version'], Core::get_plugin_info('version'), '<'))
         {
-            require_once RT_EXTENDEDCACHE;
+            Core::$PLUGIN_DETAILS['description'] .= <<<DESC
+			<br/>
+			<b style="color: orange">
+			<img src="{$mybb->settings['bburl']}/{$config['admin_dir']}/styles/default/images/icons/warning.png" alt="">
+			RT Chat version missmatch. You need to deactivate and activate plugin again.
+			</b>
+			DESC;
         }
-        if (version_compare((string) $rt_cache->version, '2', '<'))
+        else
         {
-            flash_message("RT Extended Cache version is outdated. You can update it by <a href=\"https://community.mybb.com/mods.php?action=view&pid=1558\">clicking here</a>.", "error");
-            admin_redirect("index.php?module=config-plugins");
+            Core::$PLUGIN_DETAILS['description'] .= <<<DESC
+			<br/>
+			<b style="color: green">
+			<img src="{$mybb->settings['bburl']}/{$config['admin_dir']}/styles/default/images/icons/tick.png" alt="">
+			RT Chat (ver-{$current_version}) is up-to-date and ready for use.
+			</b>
+			DESC;
         }
     }
-    else
-    {
-        flash_message("RT Extended cache is missing. You can download it by <a href=\"https://community.mybb.com/mods.php?action=view&pid=1558\">clicking here</a>.", "error");
-        admin_redirect("index.php?module=config-plugins");
-    }
+
 }
 
 /**

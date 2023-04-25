@@ -17,7 +17,7 @@ namespace rt\Chat;
 
 class Core
 {
-    public const PLUGIN_DETAILS = [
+    public static array $PLUGIN_DETAILS = [
         'name' => 'RT Chat',
         'website' => 'https://github.com/RevertIT/mybb-rt_chat',
         'description' => 'RT Chat is a modern and responsive MyBB chat plugin which utilizes MyBB cache system when retrieving messages via ajax.',
@@ -37,21 +37,11 @@ class Core
      */
     public static function get_plugin_info(string $info): string
     {
-        return match(isset(self::PLUGIN_DETAILS[$info]))
+        return match(isset(self::$PLUGIN_DETAILS[$info]))
         {
-            true => self::PLUGIN_DETAILS[$info],
+            true => self::$PLUGIN_DETAILS[$info],
             default => '',
         };
-    }
-
-    /**
-     * Get plugin description
-     *
-     * @return string
-     */
-    public static function get_plugin_description(): string
-    {
-        return self::PLUGIN_DETAILS['description'];
     }
 
     /**
@@ -216,9 +206,9 @@ class Core
     {
         global $cache;
 
-        if (!empty(self::PLUGIN_DETAILS))
+        if (!empty(self::$PLUGIN_DETAILS))
         {
-            $cache->update(self::PLUGIN_DETAILS['prefix'], self::PLUGIN_DETAILS);
+            $cache->update(self::$PLUGIN_DETAILS['prefix'], self::$PLUGIN_DETAILS);
         }
     }
 
@@ -231,9 +221,9 @@ class Core
     {
         global $cache, $rt_cache;
 
-        if (!empty($cache->read(self::PLUGIN_DETAILS['prefix'])))
+        if (!empty($cache->read(self::$PLUGIN_DETAILS['prefix'])))
         {
-            $cache->delete(self::PLUGIN_DETAILS['prefix']);
+            $cache->delete(self::$PLUGIN_DETAILS['prefix']);
         }
 
         $rt_cache->delete(get_rt_cache_query_name('rt_chat_bacheck'));
@@ -249,7 +239,7 @@ class Core
     {
         global $PL;
 
-        $PL->settings(self::PLUGIN_DETAILS['prefix'],
+        $PL->settings(self::$PLUGIN_DETAILS['prefix'],
             'RT Chat Settings',
             'General settings for the RT Chat',
             [
@@ -379,7 +369,7 @@ class Core
     {
         global $PL;
 
-        $PL->settings_delete(self::PLUGIN_DETAILS['prefix'], true);
+        $PL->settings_delete(self::$PLUGIN_DETAILS['prefix'], true);
     }
 
     /**
@@ -463,13 +453,13 @@ class Core
     {
         global $mybb, $db, $lang, $page;
 
-        $prefix = self::PLUGIN_DETAILS['prefix'];
+        $prefix = self::$PLUGIN_DETAILS['prefix'];
 
         if ($mybb->request_method !== 'post')
         {
             $lang->load($prefix);
 
-            $page->output_confirm_action('index.php?module=config-plugins&action=deactivate&uninstall=1&plugin=' . self::PLUGIN_DETAILS['prefix'], $lang->{$prefix . '_uninstall_message'}, $lang->uninstall);
+            $page->output_confirm_action('index.php?module=config-plugins&action=deactivate&uninstall=1&plugin=' . self::$PLUGIN_DETAILS['prefix'], $lang->{$prefix . '_uninstall_message'}, $lang->uninstall);
         }
 
         // Drop tables
@@ -491,9 +481,9 @@ class Core
 
         $PL->templates(
         // Prevent underscore on template prefix
-            str_replace('_', '', self::PLUGIN_DETAILS['prefix']),
-            self::PLUGIN_DETAILS['name'],
-            load_template_files('inc/plugins/'.self::PLUGIN_DETAILS['prefix'].'/templates/')
+            str_replace('_', '', self::$PLUGIN_DETAILS['prefix']),
+            self::$PLUGIN_DETAILS['name'],
+            load_template_files('inc/plugins/'.self::$PLUGIN_DETAILS['prefix'].'/templates/')
         );
     }
 
@@ -506,7 +496,7 @@ class Core
     {
         global $PL;
 
-        $PL->templates_delete(str_replace('_', '', self::PLUGIN_DETAILS['prefix']), true);
+        $PL->templates_delete(str_replace('_', '', self::$PLUGIN_DETAILS['prefix']), true);
     }
 
     /**
@@ -519,15 +509,15 @@ class Core
         global $PL;
 
         $styles = [
-            self::PLUGIN_DETAILS['prefix'] => [
+            self::$PLUGIN_DETAILS['prefix'] => [
                 'attached_to' => [],
             ],
         ];
 
         foreach ($styles as $styleName => $styleProperties)
         {
-            $file = file_exists(MYBB_ROOT . 'inc/plugins/' . self::PLUGIN_DETAILS['prefix'] . '/stylesheets/' . $styleName . '.css') ?
-                file_get_contents(MYBB_ROOT . 'inc/plugins/' . self::PLUGIN_DETAILS['prefix'] . '/stylesheets/' . $styleName . '.css') :
+            $file = file_exists(MYBB_ROOT . 'inc/plugins/' . self::$PLUGIN_DETAILS['prefix'] . '/stylesheets/' . $styleName . '.css') ?
+                file_get_contents(MYBB_ROOT . 'inc/plugins/' . self::$PLUGIN_DETAILS['prefix'] . '/stylesheets/' . $styleName . '.css') :
                 null;
 
             $PL->stylesheet($styleName, $file, $styleProperties['attached_to']);
@@ -543,7 +533,7 @@ class Core
     {
         global $PL;
 
-        $PL->stylesheet_delete(self::PLUGIN_DETAILS['prefix'], true);
+        $PL->stylesheet_delete(self::$PLUGIN_DETAILS['prefix'], true);
     }
 
     /**
@@ -581,7 +571,7 @@ class Core
 
         $html = null;
 
-        $html .= '<script src="'.$mybb->asset_url.'/jscripts/'.self::PLUGIN_DETAILS['prefix'].'.js?ver='.self::PLUGIN_DETAILS['version'].'"></script>' . PHP_EOL;
+        $html .= '<script src="'.$mybb->asset_url.'/jscripts/'.self::$PLUGIN_DETAILS['prefix'].'.js?ver='.self::$PLUGIN_DETAILS['version'].'"></script>' . PHP_EOL;
 
         $html .= '</head>';
 

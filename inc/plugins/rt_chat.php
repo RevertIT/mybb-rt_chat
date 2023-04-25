@@ -41,18 +41,23 @@ if (\rt\Chat\Core::is_enabled())
     require MYBB_ROOT . 'inc/plugins/rt_chat/src/Hooks/Frontend.php';
 }
 
-\rt\Chat\autoload_hooks_via_namespace('rt\Chat\Hooks');
+// Health checks
+\rt\Chat\load_plugin_version();
+\rt\Chat\load_pluginlibrary();
 \rt\Chat\load_rt_extendedcache();
+
+\rt\Chat\autoload_hooks_via_namespace('rt\Chat\Hooks');
 
 function rt_chat_info(): array
 {
-    return \rt\Chat\Core::PLUGIN_DETAILS;
+    return \rt\Chat\Core::$PLUGIN_DETAILS;
 }
 
 function rt_chat_install(): void
 {
     \rt\Chat\check_php_version();
-    \rt\Chat\load_pluginlibrary();
+    \rt\Chat\check_pluginlibrary();
+    \rt\Chat\check_rt_extendedcache();
 
     \rt\Chat\Core::edit_installed_templates();
     \rt\Chat\Core::add_database_modifications();
@@ -68,7 +73,8 @@ function rt_chat_is_installed(): bool
 function rt_chat_uninstall(): void
 {
     \rt\Chat\check_php_version();
-    \rt\Chat\load_pluginlibrary();
+    \rt\Chat\check_pluginlibrary();
+    \rt\Chat\check_rt_extendedcache();
 
     \rt\Chat\Core::revert_installed_templates_changes();
     \rt\Chat\Core::drop_database_modifications();
@@ -79,7 +85,8 @@ function rt_chat_uninstall(): void
 function rt_chat_activate(): void
 {
     \rt\Chat\check_php_version();
-    \rt\Chat\load_pluginlibrary();
+    \rt\Chat\check_pluginlibrary();
+    \rt\Chat\check_rt_extendedcache();
 
     \rt\Chat\Core::add_templates();
     \rt\Chat\Core::add_stylesheet();
@@ -90,7 +97,8 @@ function rt_chat_activate(): void
 function rt_chat_deactivate(): void
 {
     \rt\Chat\check_php_version();
-    \rt\Chat\load_pluginlibrary();
+    \rt\Chat\check_pluginlibrary();
+    \rt\Chat\check_rt_extendedcache();
 
     \rt\Chat\Core::remove_templates();
     \rt\Chat\Core::remove_stylesheet();
