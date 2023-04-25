@@ -26,7 +26,9 @@ Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system whe
 - Responsive design (CSS, templates, and settings included)
 - Ajax chat with cached messages. (**No database stress!**)
 - Chat bot (Get configurable notifications from bot in chat)
-- Chat actions like (/clear, /ban, /unban)
+- Chat actions like (/clear, /ban, /unban, /check)
+- Anti flood system
+- Live message timer update
 - Infinite scroll for older messages
 - Set refresh time
 - Set away time (Ajax won't be called when user is afk)
@@ -71,6 +73,12 @@ Will unban the user with username `username`.
 /clear
 ```
 Will clear all the chat messages.
+
+- **Check user status via chat action**
+```php
+/check "username"
+```
+Will check the details about user with username `username` and the message will be displayed only to moderator who called the command.
 
 ### 💡 Feature request
 Open a new idea by [clicking here](https://github.com/RevertIT/mybb-rt_chat/discussions/new?category=ideas)
