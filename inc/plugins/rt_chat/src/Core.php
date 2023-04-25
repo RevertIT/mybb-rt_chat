@@ -122,7 +122,7 @@ class Core
     {
         global $mybb;
 
-        return isset($mybb->settings['rt_chat_minposts_chat']) && (int) $mybb->settings['rt_chat_minposts_chat'] > $mybb->user['postnum'];
+        return isset($mybb->settings['rt_chat_minposts_chat']) && (int) $mybb->settings['rt_chat_minposts_chat'] < $mybb->user['postnum'];
     }
 
     /**

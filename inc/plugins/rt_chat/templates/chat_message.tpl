@@ -4,7 +4,7 @@
 <div class="rt_chat-message-content">
     <div class="rt_chat-message-meta">
         <span class="rt_chat-message-author">{$row['username']}</span>
-        <span class="rt_chat-message-timestamp">{$row['date']}</span>
+        <span class="rt_chat-message-timestamp" data-timestamp="{$row['dateline']}"></span>
     </div>
     <div class="rt_chat-message-text">
         {$row['message']}

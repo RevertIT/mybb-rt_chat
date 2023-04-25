@@ -63,7 +63,7 @@ function index_start(): void
     if (Core::can_view())
     {
         $is_disabled = '';
-        if ($mybb->user['uid'] < 1 || !Core::can_moderate())
+        if ($mybb->user['uid'] < 1 || !Core::can_post() && !Core::can_moderate())
         {
             $is_disabled = ' disabled="disabled"';
         }
@@ -109,7 +109,7 @@ function misc_start(): void
             $lang->load('rt_chat');
 
             $is_disabled = '';
-            if ($mybb->user['uid'] < 1 || !Core::can_moderate())
+            if ($mybb->user['uid'] < 1 || !Core::can_post() && !Core::can_moderate())
             {
                 $is_disabled = ' disabled="disabled"';
             }

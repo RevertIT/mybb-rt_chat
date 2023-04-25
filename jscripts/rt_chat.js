@@ -35,7 +35,7 @@ let RT_Chat =
 
         const result = await response.json();
 
-        if (result.status === false)
+        if (result === null || result.status === false)
         {
             return false;
         }
@@ -341,7 +341,7 @@ let RT_Chat =
 
         switch (true)
         {
-            case (diff < 2):
+            case (diff < 1):
                 return `just now`;
             case (diff < 60):
                 return `${Math.floor(diff)} seconds ago`;

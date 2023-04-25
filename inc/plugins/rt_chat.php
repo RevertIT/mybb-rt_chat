@@ -46,6 +46,7 @@ if (\rt\Chat\Core::is_enabled())
 \rt\Chat\load_pluginlibrary();
 \rt\Chat\load_rt_extendedcache();
 
+// Hooks autoloader
 \rt\Chat\autoload_hooks_via_namespace('rt\Chat\Hooks');
 
 function rt_chat_info(): array
