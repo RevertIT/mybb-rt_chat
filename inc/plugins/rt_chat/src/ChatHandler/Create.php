@@ -70,6 +70,29 @@ class Create extends ChatActions
             $this->error($this->lang->rt_chat_too_long_msg);
         }
 
+        // Anti-flood protection
+        $current_messages = $rt_cache->get(Core::get_plugin_info('prefix') . '_messages');
+
+        if (!empty($current_messages) &&
+            isset($this->mybb->settings['rt_chat_anti_flood']) && (int) $this->mybb->settings['rt_chat_anti_flood'] > 0 &&
+            !Core::can_moderate()
+        )
+        {
+            foreach ($current_messages as $key => $row)
+            {
+                if ($uid === (int) $row['uid'])
+                {
+                    if ($key === array_key_first($current_messages))
+                    {
+                        if (TIME_NOW - $row['dateline'] < (int) $this->mybb->settings['rt_chat_anti_flood'])
+                        {
+                            $this->error($this->lang->sprintf($this->lang->rt_chat_anti_flood, (int) $this->mybb->settings['rt_chat_anti_flood']));
+                        }
+                    }
+                }
+            }
+        }
+
         // Moderator actions
         if (Core::can_moderate())
         {
@@ -87,6 +110,10 @@ class Create extends ChatActions
                     $uid = (int) $this->mybb->settings['rt_chat_bot_id'];
                     $message = $this->lang->rt_chat_cleared_messages;
                     break;
+                case $this->checkUser($message):
+                    $uid = (int) $this->mybb->settings['rt_chat_bot_id'];
+                    $message = $this->actionMessage;
+                    return $this->renderTemplate(1, $uid, $message, TIME_NOW); // Mock up message visible only to user which called the command.
             }
         }
 

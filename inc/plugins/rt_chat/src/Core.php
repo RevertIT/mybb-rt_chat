@@ -18,12 +18,12 @@ namespace rt\Chat;
 class Core
 {
     public const PLUGIN_DETAILS = [
-        'name' => 'RT Chat (Release Candidate 1)',
+        'name' => 'RT Chat',
         'website' => 'https://github.com/RevertIT/mybb-rt_chat',
         'description' => 'RT Chat is a modern and responsive MyBB chat plugin which utilizes MyBB cache system when retrieving messages via ajax.',
         'author' => 'RevertIT',
         'authorsite' => 'https://github.com/RevertIT/',
-        'version' => '0.5',
+        'version' => '1.0',
         'compatibility' => '18*',
         'codename' => 'rt_chat',
         'prefix' => 'rt_chat',
@@ -150,19 +150,58 @@ class Core
     /**
      * Check if user is banned from chat
      *
+     * @param int $uid
      * @return bool
      */
-    public static function is_banned(): bool
+    public static function is_banned(int $uid = 0): bool
     {
         global $mybb, $rt_cache;
 
-        $data = $rt_cache->query("SELECT uid FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800)->execute();
+        if ($uid === 0)
+        {
+            $uid = $mybb->user['uid'];
+        }
+
+        $data = $rt_cache->query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800)->execute();
 
         $uids = array_column((array) $data, 'uid');
 
-        if (in_array($mybb->user['uid'], $uids))
+        if (in_array($uid, $uids))
         {
             return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check banned details for the user
+     *
+     * @param int $uid
+     * @return array|bool
+     */
+    public static function show_banned_details(int $uid = 0): array|bool
+    {
+        global $mybb, $rt_cache;
+
+        if ($uid === 0)
+        {
+            $uid = $mybb->user['uid'];
+        }
+
+        $data = $rt_cache->query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800)->execute();
+
+        $uids = array_column((array) $data, 'uid');
+
+        if (in_array($uid, $uids))
+        {
+            foreach ($data as $row)
+            {
+                if ($uid === (int) $row['uid'])
+                {
+                    return $row;
+                }
+            }
         }
 
         return false;
@@ -271,6 +310,12 @@ class Core
                     'description' => 'The message length for users',
                     'optionscode' => 'numeric',
                     'value' => 500,
+                ],
+                "anti_flood" => [
+                    'title' => 'Anti-flood protection (in seconds)',
+                    'description' => 'How many seconds needs to pass before same user can send another message? (O to disable this option)',
+                    'optionscode' => 'numeric',
+                    'value' => 10,
                 ],
                 "mycode_enabled" => [
                     'title' => 'Enable MyCode BBCodes?',

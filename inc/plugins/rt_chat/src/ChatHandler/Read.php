@@ -71,11 +71,10 @@ class Read extends AbstractChatHandler
         }
 
         // Get current cache
-        $this->messages = $rt_cache->get(Core::get_plugin_info('prefix') . '_messages');
+        $cached_messages = $rt_cache->get(Core::get_plugin_info('prefix') . '_messages');
 
-        $messages = [];
         // No messages found in cache
-        if (empty($this->messages['messages']))
+        if (empty($cached_messages))
         {
             // Query DB for latest data
             $query = $this->db->write_query("
@@ -86,9 +85,25 @@ class Read extends AbstractChatHandler
                 LIMIT {$this->mybb->settings['rt_chat_total_messages']}
             ");
 
+            $cached =  [];
+            foreach ($query as $row)
+            {
+                $cached[] = $row;
+            }
+
+            // Set new cache
+            $rt_cache->set(Core::get_plugin_info('prefix') . '_messages', $cached, 604800);
+
+            // Return new cache
+            $cached_messages = $rt_cache->get(Core::get_plugin_info('prefix') . '_messages');
+        }
+
+        // Work with the cache and setup message response
+        if (!empty($cached_messages))
+        {
             $first = $last = 0;
-            $data = [];
-            foreach ($query as $key => $row)
+            $messages = $data = [];
+            foreach ($cached_messages as $key => $row)
             {
                 if ($key === 0)
                 {
@@ -96,10 +111,14 @@ class Read extends AbstractChatHandler
                 }
                 $last = $row['id'];
 
-                $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
-                $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
-                $row['dateline'] = $row['dateline'] ?? null;
-                $row['date'] = isset($row['dateline']) ? my_date('relative', $row['dateline']) : null;
+                $row['edit_message'] = $row['delete_message'] = '';
+                if (Core::can_moderate() || $row['uid'] === $this->mybb->user['uid'])
+                {
+                    $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
+                    $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
+                }
+
+                $row['dateline'] = $row['dateline'] ?? TIME_NOW;
                 $row['avatar'] = !empty($row['avatar']) ? htmlspecialchars_uni($row['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
                 $row['username'] = isset($row['uid'], $row['username'], $row['usergroup'], $row['displaygroup']) ? build_profile_link(format_name($row['username'], $row['usergroup'], $row['displaygroup']), $row['uid']) : $this->lang->na;
                 $row['original_message'] = isset($row['message']) ? base64_encode(htmlspecialchars_uni($row['message'])) : null;
@@ -120,43 +139,11 @@ class Read extends AbstractChatHandler
             }
 
             // Arrange array
-            $final_data = [
+            $this->messages = [
                 'status' => true,
-                'cached' => my_date('c', TIME_NOW),
                 'messages' => array_reverse($messages),
                 'data' => $data,
             ];
-
-            // Set new cache
-            $rt_cache->set(Core::get_plugin_info('prefix') . '_messages', $final_data, 604800);
-
-            // Return new cache
-            $this->messages = $rt_cache->get(Core::get_plugin_info('prefix') . '_messages');
-        }
-
-        // Remove loaded messages
-        $new_messages = [];
-        if (!empty($loadedMessages) && !empty($this->messages['messages']))
-        {
-            foreach ($this->messages['messages'] as $row)
-            {
-                if (in_array($row['id'], $loadedMessages))
-                {
-                    continue;
-                }
-                $new_messages[] = $row;
-            }
-
-            if (empty($new_messages))
-            {
-                $this->messages['status'] = false;
-                $this->messages['error'] = $this->lang->rt_chat_no_new_messages_found;
-                unset($this->messages['data'], $this->messages['messages']);
-            }
-            else
-            {
-                $this->messages['messages'] = $new_messages;
-            }
         }
 
         $plugins->run_hooks('rt_chat_end_message_view', $this->messages);
@@ -172,7 +159,7 @@ class Read extends AbstractChatHandler
      */
     public function getMessageBeforeId(int $messageId): array
     {
-        global $rt_cache, $plugins;
+        global $plugins;
 
         $plugins->run_hooks('rt_chat_begin_message_view_with_id', $messageId);
 
@@ -227,10 +214,14 @@ class Read extends AbstractChatHandler
             }
             $last = $row['id'];
 
-            $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
-            $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
-            $row['dateline'] = $row['dateline'] ?? null;
-            $row['date'] = isset($row['dateline']) ? my_date('relative', $row['dateline']) : null;
+            $row['edit_message'] = $row['delete_message'] = '';
+            if (Core::can_moderate() || $row['uid'] === $this->mybb->user['uid'])
+            {
+                $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
+                $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
+            }
+
+            $row['dateline'] = $row['dateline'] ?? TIME_NOW;
             $row['avatar'] = !empty($row['avatar']) ? htmlspecialchars_uni($row['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
             $row['username'] = isset($row['uid'], $row['username'], $row['usergroup'], $row['displaygroup']) ? build_profile_link(format_name($row['username'], $row['usergroup'], $row['displaygroup']), $row['uid']) : $this->lang->na;
             $row['original_message'] = isset($row['message']) ? base64_encode(htmlspecialchars_uni($row['message'])) : null;

@@ -61,6 +61,9 @@ let RT_Chat =
                 if (messageDiv.innerHTML !== m.html)
                 {
                     messageDiv.innerHTML = m.html;
+                    let timestamp = messageDiv.querySelector(selector + '-message-timestamp');
+                    let unixTime = timestamp.getAttribute('data-timestamp');
+                    timestamp.innerHTML = RT_Chat.renderTime(unixTime);
                 }
             }
             else
@@ -71,6 +74,10 @@ let RT_Chat =
                 newMessageDiv.classList.add(`${selectorClass}-message`);
                 newMessageDiv.innerHTML = m.html;
                 chatBox.appendChild(newMessageDiv);
+
+                let timestamp = newMessageDiv.querySelector(selector + '-message-timestamp');
+                let unixTime = timestamp.getAttribute('data-timestamp');
+                timestamp.innerHTML = RT_Chat.renderTime(unixTime);
             }
         }
 
@@ -135,6 +142,9 @@ let RT_Chat =
                 if (messageDiv.innerHTML !== m.html)
                 {
                     messageDiv.innerHTML = m.html;
+                    let timestamp = messageDiv.querySelector(selector + '-message-timestamp');
+                    let unixTime = timestamp.getAttribute('data-timestamp');
+                    timestamp.innerHTML = RT_Chat.renderTime(unixTime);
                 }
             }
             else
@@ -145,6 +155,10 @@ let RT_Chat =
                 newMessageDiv.classList.add(`${selectorClass}-message`);
                 newMessageDiv.innerHTML = m.html;
                 chatBox.insertBefore(newMessageDiv, chatBox.firstChild);
+
+                let timestamp = newMessageDiv.querySelector(selector + '-message-timestamp');
+                let unixTime = timestamp.getAttribute('data-timestamp');
+                timestamp.innerHTML = RT_Chat.renderTime(unixTime);
             }
         }
 
@@ -203,6 +217,18 @@ let RT_Chat =
                     await RT_Chat.loadMoreMessages(selector, RT_Chat.loadMessagesUrl);
                 }
             });
+
+            // Update interval for timestamp
+            setInterval(() =>
+            {
+                let time = chatBox.querySelectorAll(selector + '-message-timestamp');
+
+                for (let t of time)
+                {
+                    let unixTime = t.getAttribute('data-timestamp');
+                    t.innerHTML = RT_Chat.renderTime(unixTime);
+                }
+            }, 1000);
 
             // Add listener for insterting message
             const insertMessage = document.querySelector(`${selector}-insert`);
@@ -307,5 +333,27 @@ let RT_Chat =
 
         document.querySelector(selector + '-input > input[name="message"]').value = messageToEdit;
         document.querySelector(selector + '-input > input[name="message"]').focus();
-    }
+    },
+    renderTime: (unixTimestamp) =>
+    {
+        const now = Date.now() / 1000;
+        const diff = now - unixTimestamp;
+
+        switch (true)
+        {
+            case (diff < 2):
+                return `just now`;
+            case (diff < 60):
+                return `${Math.floor(diff)} seconds ago`;
+            case (diff < 3600):
+                const minutes = Math.floor(diff / 60);
+                return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+            case (diff < 86400):
+                const hours = Math.floor(diff / 3600);
+                return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+            default:
+                const date = new Date(unixTimestamp * 1000);
+                return date.toDateString();
+        }
+    },
 }

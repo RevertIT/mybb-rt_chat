@@ -20,15 +20,17 @@ use rt\Chat\Core;
 
 class ChatActions extends AbstractChatHandler
 {
+    public string $actionMessage = '';
+
     /**
      * Action handler for banning users via chat message
      *
      * Example: (username, reason, time in minutes): /ban "username" "reason" 50
      *
      * @param string $message
-     * @return array|bool
+     * @return bool
      */
-    protected function banUser(string $message): array|bool
+    protected function banUser(string $message): bool
     {
         global $rt_cache;
 
@@ -53,6 +55,10 @@ class ChatActions extends AbstractChatHandler
                 {
                     $this->error($this->lang->rt_chat_ban_user_same_id);
                 }
+                if (Core::is_banned((int) $user['uid']))
+                {
+                    $this->error($this->lang->rt_chat_moderate_user_already_banned);
+                }
 
                 if (!empty($this->getError()))
                 {
@@ -66,9 +72,12 @@ class ChatActions extends AbstractChatHandler
                     'expires' => $expire_time_minutes,
                 ]);
 
+                $banned_user_link = $this->mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $user['uid'];
+                $banned_by_user_link = $this->mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $this->mybb->user['uid'];
+
                 $rt_cache->query('')->delete('rt_chat_bacheck');
-                $rt_cache->query("SELECT uid FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800);
-                $this->lang->rt_chat_banned_message = $this->lang->sprintf($this->lang->rt_chat_banned_message, $ban[1], $ban[2], $ban[3], $this->mybb->user['username']);
+                $rt_cache->query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800);
+                $this->lang->rt_chat_banned_message = $this->lang->sprintf($this->lang->rt_chat_banned_message, $banned_user_link, $ban[1], $ban[2], $ban[3], $banned_by_user_link, $this->mybb->user['username']);
 
                 return true;
             }
@@ -82,9 +91,9 @@ class ChatActions extends AbstractChatHandler
      * Example: (username): /unban "username"
      *
      * @param string $message
-     * @return array|bool
+     * @return bool
      */
-    protected function unbanUser(string $message): array|bool
+    protected function unbanUser(string $message): bool
     {
         global $rt_cache;
 
@@ -99,15 +108,23 @@ class ChatActions extends AbstractChatHandler
                     $this->error($this->lang->rt_chat_moderate_user_not_found);
                 }
 
+                if (!Core::is_banned((int) $user['uid']))
+                {
+                    $this->error($this->lang->rt_chat_moderate_user_not_banned);
+                }
+
                 if (!empty($this->getError()))
                 {
                     return $this->getError();
                 }
 
+                $user_link = $this->mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $user['uid'];
+                $user_unbanned_by_link = $this->mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $this->mybb->user['uid'];
+
                 $this->db->delete_query('rtchat_bans', "uid = '{$this->db->escape_string($user['uid'])}'");
                 $rt_cache->query('')->delete('rt_chat_bacheck');
-                $rt_cache->query("SELECT uid FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800);
-                $this->lang->rt_chat_unbanned_message = $this->lang->sprintf($this->lang->rt_chat_unbanned_message, $unban[1], $this->mybb->user['username']);
+                $rt_cache->query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800);
+                $this->lang->rt_chat_unbanned_message = $this->lang->sprintf($this->lang->rt_chat_unbanned_message, $user_link, $unban[1], $user_unbanned_by_link, $this->mybb->user['username']);
 
                 return true;
             }
@@ -122,9 +139,9 @@ class ChatActions extends AbstractChatHandler
      * Example: (command): /clear
      *
      * @param string $message
-     * @return array|bool
+     * @return bool
      */
-    protected function clearChat(string $message): array|bool
+    protected function clearChat(string $message): bool
     {
         global $rt_cache;
 
@@ -134,11 +151,48 @@ class ChatActions extends AbstractChatHandler
             {
                 $this->db->delete_query('rtchat');
                 $rt_cache->delete('rt_chat_messages');
-                $this->lang->rt_chat_cleared_messages = $this->lang->sprintf($this->lang->rt_chat_cleared_messages, $this->mybb->user['username']);
+                $user_link = $this->mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $this->mybb->user['uid'];
+                $this->lang->rt_chat_cleared_messages = $this->lang->sprintf($this->lang->rt_chat_cleared_messages, $user_link, $this->mybb->user['username']);
                 return true;
             }
         }
 
+        return false;
+    }
+
+    /**
+     * Action handler for checking if user is banned
+     *
+     * @param string $message
+     * @return bool
+     */
+    protected function checkUser(string $message): bool
+    {
+        if (preg_match('/^\/check\s"([^"]+)"?$/i', $message, $check))
+        {
+            if (isset($check[1]))
+            {
+                $user = get_user_by_username($check[1]);
+
+                switch (true)
+                {
+                    case !isset($user['uid']):
+                        $this->actionMessage = $this->lang->sprintf($this->lang->rt_chat_check_user_not_found, $check[1]) . $this->lang->rt_chat_private_note;
+                        break;
+                    case Core::is_banned((int) $user['uid']):
+                        $data = Core::show_banned_details((int) $user['uid']);
+                        $ban_length = floor(($data['expires'] - TIME_NOW) / 60);
+                        $reason = $data['reason'];
+                        $this->actionMessage = $this->lang->sprintf($this->lang->rt_chat_check_user_ban, $check[1], $ban_length, $reason) . $this->lang->rt_chat_private_note;
+                        break;
+                    default:
+                        $this->actionMessage = $this->lang->sprintf($this->lang->rt_chat_check_user, $check[1]) . $this->lang->rt_chat_private_note;
+                        break;
+                }
+
+                return true;
+            }
+        }
         return false;
     }
 }

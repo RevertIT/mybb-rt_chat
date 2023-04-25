@@ -15,16 +15,18 @@ declare(strict_types=1);
 
 namespace rt\Chat\Hooks;
 
+use Exception;
+use rt\Chat\Core;
 use rt\Chat\ChatHandler\Create;
 use rt\Chat\ChatHandler\Delete;
 use rt\Chat\ChatHandler\Update;
-use rt\Chat\Core;
 use rt\Chat\ChatHandler\Read;
 
 /**
  * Hook: global_start
  *
  * @return void
+ * @throws Exception
  */
 function global_start(): void
 {
@@ -75,7 +77,7 @@ function index_start(): void
  *
  * @param string $content
  * @return string
- * @throws \Exception
+ * @throws Exception
  */
 function pre_output_page(string $content): string
 {
@@ -226,7 +228,7 @@ function task_hourlycleanup(&$args): void
         if ($rt_chat_num_deleted >= 1)
         {
             $rt_cache->query('')->delete('rt_chat_bacheck');
-            $rt_cache->query("SELECT uid FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800);
+            $rt_cache->query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800);
         }
     }
 }

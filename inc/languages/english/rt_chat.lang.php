@@ -1,8 +1,8 @@
 <?php
 
+$l['rt_chat_name'] = 'RT Chat (Change in language file)';
 $l['rt_chat_enter_message'] = 'Enter your message...';
 $l['rt_chat_send'] = 'Send';
-$l['rt_chat_name'] = 'RT Chat (Change in language file)';
 $l['rt_chat_no_messages_found'] = 'No messages found in chat';
 $l['rt_chat_no_new_messages_found'] = 'No new messages found';
 $l['rt_chat_no_perms'] = 'You do not have permission to view the chat';
@@ -17,13 +17,19 @@ $l['rt_chat_new_thread'] = 'A new thread [url={1}]{2}[/url] has been posted by [
 $l['rt_chat_new_user'] = 'A new user [url={1}]{2}[/url] has just joined the forum. Wish them a warm welcome!';
 $l['rt_chat_edit'] = 'Edit';
 $l['rt_chat_delete'] = 'Delete';
+$l['rt_chat_anti_flood'] = 'Anti-flood protection: You need to wai at least {1} seconds before you can send a new message.';
 $l['rt_chat_selected_message_not_found'] = 'The selected message was not found';
 $l['rt_chat_banned'] = 'You are banned from using the chat';
 $l['rt_chat_message_same'] = 'Your message must not be the same while editing';
-$l['rt_chat_banned_message'] = 'The user {1} has been banned with a reason "{2}" for {3} minutes by {4}';
-$l['rt_chat_unbanned_message'] = 'The user {1} has been unbanned by {2}';
+$l['rt_chat_banned_message'] = 'The user [url={1}]{2}[/url] has been banned with a reason "{3}" for {4} minutes by [url={5}]{6}[/url]';
+$l['rt_chat_unbanned_message'] = 'The user [url={1}]{2}[/url] has been unbanned by [url={3}]{4}[/url]';
 $l['rt_chat_ban_time_short'] = 'When banning an user, insert ban time to be longer than 5 minutes';
 $l['rt_chat_moderate_user_not_found'] = 'The user you are trying to moderate does not exist';
 $l['rt_chat_ban_user_same_id'] = 'You can not ban yourself';
 $l['rt_chat_moderate_user_not_banned'] = 'The user is not banned';
-$l['rt_chat_cleared_messages'] = 'The chat has been cleared by {1}';
+$l['rt_chat_moderate_user_already_banned'] = 'The user is already banned';
+$l['rt_chat_cleared_messages'] = 'The chat has been cleared by [url={1}]{2}[/url]';
+$l['rt_chat_check_user_ban'] = "Details for [b]{1}[/b]:\nBan expires in {2} minutes.\nReason: {3}.";
+$l['rt_chat_check_user'] = "Details for [b]{1}[/b]:\n No active bans found.";
+$l['rt_chat_check_user_not_found'] = "Details for [b]{1}[/b]:\n No user found with such username.";
+$l['rt_chat_private_note'] = "\n\n[i]This message is only visible to you, it will disappear once you refresh the page[/i]";
