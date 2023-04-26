@@ -284,12 +284,15 @@ let RT_Chat =
         }
         else
         {
+            // Scroll to bottom after submitting a message (when not editing current message)
+            if (editId === '')
+            {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
             document.querySelector(selector + '-input input[name="message"]').value = '';
             document.querySelector(selector + '-input > input[name="edit_id"]').value = '';
             RT_Chat.renderMessages(selector, result.messages);
-
-            // Scroll to bottom after submitting message
-            chatBox.scrollTop = chatBox.scrollHeight;
         }
     },
     deleteMessage: async(url, selector, id) =>
