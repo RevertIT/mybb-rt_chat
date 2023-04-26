@@ -23,7 +23,7 @@ class Core
         'description' => 'RT Chat is a modern and responsive MyBB chat plugin which utilizes MyBB cache system when retrieving messages via ajax.',
         'author' => 'RevertIT',
         'authorsite' => 'https://github.com/RevertIT/',
-        'version' => '1.0',
+        'version' => '1.1',
         'compatibility' => '18*',
         'codename' => 'rt_chat',
         'prefix' => 'rt_chat',
@@ -122,7 +122,15 @@ class Core
     {
         global $mybb;
 
-        return isset($mybb->settings['rt_chat_minposts_chat']) && (int) $mybb->settings['rt_chat_minposts_chat'] < $mybb->user['postnum'];
+        if (isset($mybb->settings['rt_chat_minposts_chat']))
+        {
+            if ($mybb->user['postnum'] < (int) $mybb->settings['rt_chat_minposts_chat'])
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -152,7 +160,7 @@ class Core
             $uid = $mybb->user['uid'];
         }
 
-        $data = $rt_cache->query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800)->execute();
+        $data = $rt_cache->get(Core::get_plugin_info('prefix') . '_bans');
 
         $uids = array_column((array) $data, 'uid');
 
@@ -179,7 +187,7 @@ class Core
             $uid = $mybb->user['uid'];
         }
 
-        $data = $rt_cache->query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800)->execute();
+        $data = $rt_cache->get(Core::get_plugin_info('prefix') . '_bans');
 
         $uids = array_column((array) $data, 'uid');
 
@@ -226,7 +234,7 @@ class Core
             $cache->delete(self::$PLUGIN_DETAILS['prefix']);
         }
 
-        $rt_cache->delete(get_rt_cache_query_name('rt_chat_bacheck'));
+        $rt_cache->delete(Core::get_plugin_info('prefix') . '_bans');
         $rt_cache->delete('rt_chat_messages');
     }
 

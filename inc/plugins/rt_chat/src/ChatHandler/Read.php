@@ -41,75 +41,58 @@ class Read extends AbstractChatHandler
      */
     public function getMessages(array $loadedMessages = []): mixed
     {
-        global $rt_cache, $plugins;
+        global $plugins;
 
         $plugins->run_hooks('rt_chat_begin_message_view', $loadedMessages);
-
-        // Parse bbcodes
-        $parser_options = [
-            "allow_html" => 0,
-            "allow_mycode" => 0,
-            "allow_smilies" => 0,
-            "allow_imgcode" => 0,
-            "allow_videocode" => 0,
-            "filter_badwords" => 1,
-            "filter_cdata" => 1
-        ];
 
         if ($this->getError())
         {
             return $this->getError();
         }
 
-        if (isset($this->mybb->settings['rt_chat_mycode_enabled']) && (int) $this->mybb->settings['rt_chat_mycode_enabled'] === 1)
-        {
-            $parser_options['allow_mycode'] = 1;
-        }
-        if (isset($this->mybb->settings['rt_chat_smilies_enabled']) && (int) $this->mybb->settings['rt_chat_smilies_enabled'] === 1)
-        {
-            $parser_options['allow_smilies'] = 1;
-        }
-
         // Get current cache
-        $cached_messages = $rt_cache->get(Core::get_plugin_info('prefix') . '_messages');
+        $cached_messages = $this->getCachedMessages();
 
-        // No messages found in cache
+        // No messages found in cache try to cache it
         if (empty($cached_messages))
         {
-            // Query DB for latest data
-            $query = $this->db->write_query("
-                SELECT c.*, u.username, u.usergroup, u.displaygroup, u.avatar
-                FROM ".TABLE_PREFIX."rtchat c
-                LEFT JOIN ".TABLE_PREFIX."users u ON u.uid = c.uid
-                ORDER BY c.id DESC
-                LIMIT {$this->mybb->settings['rt_chat_total_messages']}
-            ");
-
-            $cached =  [];
-            foreach ($query as $row)
-            {
-                $cached[] = $row;
-            }
-
-            // Set new cache
-            $rt_cache->set(Core::get_plugin_info('prefix') . '_messages', $cached, 604800);
-
-            // Return new cache
-            $cached_messages = $rt_cache->get(Core::get_plugin_info('prefix') . '_messages');
+            $this->setCachedMessages();
+            $cached_messages = $this->getCachedMessages();
         }
 
         // Work with the cache and setup message response
         if (!empty($cached_messages))
         {
-            $first = $last = 0;
+            // Parse bbcodes
+            $parser_options = [
+                "allow_html" => 0,
+                "allow_mycode" => 0,
+                "allow_smilies" => 0,
+                "allow_imgcode" => 0,
+                "allow_videocode" => 0,
+                "filter_badwords" => 1,
+                "filter_cdata" => 1
+            ];
+
+            if (isset($this->mybb->settings['rt_chat_mycode_enabled']) && (int) $this->mybb->settings['rt_chat_mycode_enabled'] === 1)
+            {
+                $parser_options['allow_mycode'] = 1;
+            }
+            if (isset($this->mybb->settings['rt_chat_smilies_enabled']) && (int) $this->mybb->settings['rt_chat_smilies_enabled'] === 1)
+            {
+                $parser_options['allow_smilies'] = 1;
+            }
+
             $messages = $data = [];
             foreach ($cached_messages as $key => $row)
             {
+                // Find message first/last iterations
                 if ($key === 0)
                 {
-                    $first = $row['id'];
+                    $data['first'] = $row['id'];
                 }
-                $last = $row['id'];
+                $data['last'] = $row['id'];
+                $data['loaded'][] = $row['id'];
 
                 $row['edit_message'] = $row['delete_message'] = '';
                 if (Core::can_moderate() || $row['uid'] === $this->mybb->user['uid'])
@@ -125,11 +108,6 @@ class Read extends AbstractChatHandler
                 $row['message'] = isset($row['message']) ? $this->parser->parse_message($row['message'], $parser_options) : null;
 
                 eval("\$message = \"".\rt\Chat\template('chat_message', true)."\";");
-
-                $data['first'] = $first;
-                $data['last'] = $last;
-                $data['loaded'][] = $row['id'];
-
                 $messages[] = [
                     'id' => $row['id'],
                     'uid' => $row['uid'],
@@ -194,7 +172,7 @@ class Read extends AbstractChatHandler
         }
 
         // Get current cache
-        $cached_query = $this->db->write_query("
+        $query = $this->db->write_query("
             SELECT c.*, u.username, u.usergroup, u.displaygroup, u.avatar
             FROM ".TABLE_PREFIX."rtchat c
             LEFT JOIN ".TABLE_PREFIX."users u ON u.uid = c.uid
@@ -203,16 +181,16 @@ class Read extends AbstractChatHandler
             LIMIT {$this->mybb->settings['rt_chat_total_messages']}
         ");
 
-        $first = $last = 0;
-        $data = [];
-        $messages = [];
-        foreach ($cached_query as $key => $row)
+        $data = $messages = [];
+        foreach ($query as $key => $row)
         {
+            // Find message first/last iterations
             if ($key === 0)
             {
-                $first = $row['id'];
+                $data['first'] = $row['id'];
             }
-            $last = $row['id'];
+            $data['last'] = $row['id'];
+            $data['loaded'][] = $row['id'];
 
             $row['edit_message'] = $row['delete_message'] = '';
             if (Core::can_moderate() || $row['uid'] === $this->mybb->user['uid'])
@@ -228,9 +206,6 @@ class Read extends AbstractChatHandler
             $row['message'] = isset($row['message']) ? $this->parser->parse_message($row['message'], $parser_options) : null;
 
             eval("\$message = \"".\rt\Chat\template('chat_message', true)."\";");
-
-            $data['first'] = $first;
-            $data['last'] = $last;
 
             $messages[] = [
                 'id' => $row['id'],

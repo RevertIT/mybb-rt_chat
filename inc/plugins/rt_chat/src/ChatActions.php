@@ -32,7 +32,6 @@ class ChatActions extends AbstractChatHandler
      */
     protected function banUser(string $message): bool
     {
-        global $rt_cache;
 
         if (preg_match('/^\/ban\s"([^"]+)"\s"([^"]+)"\s(\d+)?$/i', $message, $ban))
         {
@@ -74,10 +73,9 @@ class ChatActions extends AbstractChatHandler
 
                 $banned_user_link = $this->mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $user['uid'];
                 $banned_by_user_link = $this->mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $this->mybb->user['uid'];
-
-                $rt_cache->query('')->delete('rt_chat_bacheck');
-                $rt_cache->query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800);
                 $this->lang->rt_chat_banned_message = $this->lang->sprintf($this->lang->rt_chat_banned_message, $banned_user_link, $ban[1], $ban[2], $ban[3], $banned_by_user_link, $this->mybb->user['username']);
+
+                $this->setBannedUsers();
 
                 return true;
             }
@@ -95,7 +93,6 @@ class ChatActions extends AbstractChatHandler
      */
     protected function unbanUser(string $message): bool
     {
-        global $rt_cache;
 
         if (preg_match('/^\/unban\s"([^"]+)"?$/i', $message, $unban))
         {
@@ -122,9 +119,9 @@ class ChatActions extends AbstractChatHandler
                 $user_unbanned_by_link = $this->mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $this->mybb->user['uid'];
 
                 $this->db->delete_query('rtchat_bans', "uid = '{$this->db->escape_string($user['uid'])}'");
-                $rt_cache->query('')->delete('rt_chat_bacheck');
-                $rt_cache->query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800);
                 $this->lang->rt_chat_unbanned_message = $this->lang->sprintf($this->lang->rt_chat_unbanned_message, $user_link, $unban[1], $user_unbanned_by_link, $this->mybb->user['username']);
+
+                $this->setBannedUsers();
 
                 return true;
             }
@@ -143,16 +140,17 @@ class ChatActions extends AbstractChatHandler
      */
     protected function clearChat(string $message): bool
     {
-        global $rt_cache;
 
         if (preg_match('/^\/clear$/i', $message, $clear))
         {
             if (isset($clear[0]))
             {
                 $this->db->delete_query('rtchat');
-                $rt_cache->delete('rt_chat_messages');
                 $user_link = $this->mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $this->mybb->user['uid'];
                 $this->lang->rt_chat_cleared_messages = $this->lang->sprintf($this->lang->rt_chat_cleared_messages, $user_link, $this->mybb->user['username']);
+
+                $this->setCachedMessages();
+
                 return true;
             }
         }

@@ -21,7 +21,7 @@ class Delete extends AbstractChatHandler
 {
     public function deleteMessage(int $messageId): array|bool
     {
-        global $rt_cache, $plugins;
+        global $plugins;
 
         $plugins->run_hooks('rt_chat_begin_message_delete', $messageId);
 
@@ -55,7 +55,7 @@ class Delete extends AbstractChatHandler
 
         $plugins->run_hooks('rt_chat_commit_message_delete', $messageId);
 
-        $rt_cache->delete(Core::get_plugin_info('prefix') . '_messages');
+        $this->setCachedMessages();
 
         return [
             'status' => true,

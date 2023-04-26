@@ -346,7 +346,6 @@ function load_plugin_version(): void
 			DESC;
         }
     }
-
 }
 
 /**
@@ -363,15 +362,4 @@ function get_settings_values(string $name): array
         explode(',', $mybb->settings[Core::get_plugin_info('prefix') . '_' . $name] ?? ''),
         'strlen'
     );
-}
-
-/**
- * Return hexed cache name from DB queries
- *
- * @param string $cache_name
- * @return string
- */
-function get_rt_cache_query_name(string $cache_name): string
-{
-    return bin2hex($cache_name);
 }

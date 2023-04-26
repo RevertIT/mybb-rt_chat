@@ -32,7 +32,7 @@ class Create extends ChatActions
      */
     public function insertMessage(int $uid, string $message, bool $overrideChecks = false): array|bool
     {
-        global $rt_cache, $plugins;
+        global $plugins;
 
         $message = trim_blank_chrs($message);
 
@@ -71,7 +71,7 @@ class Create extends ChatActions
         }
 
         // Anti-flood protection
-        $current_messages = $rt_cache->get(Core::get_plugin_info('prefix') . '_messages');
+        $current_messages = $this->getCachedMessages();
 
         if (!empty($current_messages) &&
             isset($this->mybb->settings['rt_chat_anti_flood']) && (int) $this->mybb->settings['rt_chat_anti_flood'] > 0 &&
@@ -132,8 +132,10 @@ class Create extends ChatActions
 
         $plugins->run_hooks('rt_chat_commit_message_insert', $data);
 
-        $rt_cache->delete(Core::get_plugin_info('prefix') . '_messages');
+        // Set new cached messages
+        $this->setCachedMessages();
 
+        // We return mockup of current inserted message
         return $this->renderTemplate(
             (int) $this->messageId,
             $uid,

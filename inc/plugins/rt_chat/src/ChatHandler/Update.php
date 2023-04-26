@@ -28,7 +28,7 @@ class Update extends AbstractChatHandler
      */
     public function updateMessage(int $messageId, string $message): bool|array
     {
-        global $rt_cache, $plugins;
+        global $plugins;
 
         $data = [
             'messageId' => $messageId,
@@ -77,7 +77,7 @@ class Update extends AbstractChatHandler
 
         $plugins->run_hooks('rt_chat_commit_message_update', $data);
 
-        $rt_cache->delete(Core::get_plugin_info('prefix') . '_messages');
+        $this->setCachedMessages();
 
         return $this->renderTemplate(
             $messageId,

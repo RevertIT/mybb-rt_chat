@@ -222,14 +222,21 @@ function task_hourlycleanup(&$args): void
 
     // Delete expired bans
     $rt_chat_clear = $db->delete_query("rtchat_bans", "dateline > expires");
-    {
-        $rt_chat_num_deleted = (int) $db->affected_rows($rt_chat_clear);
 
-        if ($rt_chat_num_deleted >= 1)
+    $rt_chat_num_deleted = (int) $db->affected_rows($rt_chat_clear);
+
+    if ($rt_chat_num_deleted >= 1)
+    {
+        $query = $db->write_query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans");
+
+        $cached =  [];
+        foreach ($query as $row)
         {
-            $rt_cache->query('')->delete('rt_chat_bacheck');
-            $rt_cache->query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans")->cache('rt_chat_bacheck', 604800);
+            $cached[] = $row;
         }
+
+        // Set new cache
+        $rt_cache->set(Core::get_plugin_info('prefix') . '_bans', $cached, 604800);
     }
 }
 

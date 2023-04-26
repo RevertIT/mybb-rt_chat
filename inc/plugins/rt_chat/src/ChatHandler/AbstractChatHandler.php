@@ -147,4 +147,77 @@ class AbstractChatHandler
             ]
         ];
     }
+
+    /**
+     * Set cached messages from the database
+     *
+     * @return void
+     */
+    protected function setCachedMessages(): void
+    {
+        global $rt_cache;
+
+        // Query DB for latest data
+        $query = $this->db->write_query("
+                SELECT c.*, u.username, u.usergroup, u.displaygroup, u.avatar
+                FROM ".TABLE_PREFIX."rtchat c
+                LEFT JOIN ".TABLE_PREFIX."users u ON u.uid = c.uid
+                ORDER BY c.id DESC
+                LIMIT {$this->mybb->settings['rt_chat_total_messages']}
+            ");
+
+        $cached =  [];
+        foreach ($query as $row)
+        {
+            $cached[] = $row;
+        }
+
+        // Set new cache
+        $rt_cache->set(Core::get_plugin_info('prefix') . '_messages', $cached, 604800);
+    }
+
+    /**
+     * Get cached messages from the cache
+     *
+     * @return array|null
+     */
+    protected function getCachedMessages(): ?array
+    {
+        global $rt_cache;
+
+        return $rt_cache->get(Core::get_plugin_info('prefix') . '_messages');
+    }
+
+    /**
+     * Set cached list of banned users from the database
+     *
+     * @return void
+     */
+    protected function setBannedUsers(): void
+    {
+        global $rt_cache;
+
+        $query = $this->db->write_query("SELECT * FROM ".TABLE_PREFIX."rtchat_bans");
+
+        $cached =  [];
+        foreach ($query as $row)
+        {
+            $cached[] = $row;
+        }
+
+        // Set new cache
+        $rt_cache->set(Core::get_plugin_info('prefix') . '_bans', $cached, 604800);
+    }
+
+    /**
+     * Get cached list of banned users from the cache
+     *
+     * @return array|null
+     */
+    protected function getBannedUsers(): ?array
+    {
+        global $rt_cache;
+
+        return $rt_cache->get(Core::get_plugin_info('prefix') . '_bans');
+    }
 }

@@ -200,7 +200,6 @@ let RT_Chat =
                             // If we have a new last id, insert new messages
                             if (fetch2.data.last !== RT_Chat.oldestMessageId)
                             {
-                                RT_Chat.oldestMessageId = ++fetch2.data.last;
                                 RT_Chat.renderMessages(selector, fetch2.messages);
                             }
                         }
@@ -260,6 +259,7 @@ let RT_Chat =
     },
     insertMessage: async (url, selector) =>
     {
+        const chatBox = document.querySelector(selector + '-messages')
         const message = document.querySelector(selector + '-input input[name="message"]').value;
         const myPostKey = document.querySelector(selector + '-input input[name="my_post_key"]').value;
         const editId = document.querySelector(selector + '-input input[name="edit_id"]').value;
@@ -286,8 +286,10 @@ let RT_Chat =
         {
             document.querySelector(selector + '-input input[name="message"]').value = '';
             document.querySelector(selector + '-input > input[name="edit_id"]').value = '';
-            RT_Chat.oldestMessageId = ++result.data.last;
             RT_Chat.renderMessages(selector, result.messages);
+
+            // Scroll to bottom after submitting message
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
     },
     deleteMessage: async(url, selector, id) =>
