@@ -1,0 +1,1 @@
+<a id="{$row['id']}" class="rt_chat-edit" href="javascript:void(0);">{$this->lang->rt_chat_edit}</a>

@@ -250,6 +250,11 @@ let RT_Chat =
                 {
                     RT_Chat.editMessage(selector, target.id);
                 }
+
+                if (target.classList.contains(`${selectorClass}-whisper`))
+                {
+                    RT_Chat.whisper(selector, target.getAttribute('data-to_uid'));
+                }
             });
         }
         catch (e)
@@ -263,12 +268,14 @@ let RT_Chat =
         const message = document.querySelector(selector + '-input input[name="message"]').value;
         const myPostKey = document.querySelector(selector + '-input input[name="my_post_key"]').value;
         const editId = document.querySelector(selector + '-input input[name="edit_id"]').value;
+        const toUid = document.querySelector(selector + '-input input[name="to_uid"]').value;
 
         // Create a new form data object
         const formData = new FormData();
         formData.append('message', message);
         formData.append('my_post_key', myPostKey);
         formData.append('edit_id', editId);
+        formData.append('to_uid', toUid);
 
         const response = await fetch(url, {
             method: 'post',
@@ -284,14 +291,15 @@ let RT_Chat =
         }
         else
         {
-            // Scroll to bottom after submitting a message (when not editing current message)
             if (editId === '')
             {
+                // Scroll to bottom after submitting message
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
 
             document.querySelector(selector + '-input input[name="message"]').value = '';
             document.querySelector(selector + '-input > input[name="edit_id"]').value = '';
+            document.querySelector(selector + '-input > input[name="to_uid"]').value = '';
             RT_Chat.renderMessages(selector, result.messages);
         }
     },
@@ -337,6 +345,13 @@ let RT_Chat =
         messageToEdit = atob(messageToEdit);
 
         document.querySelector(selector + '-input > input[name="message"]').value = messageToEdit;
+        document.querySelector(selector + '-input > input[name="message"]').focus();
+    },
+    whisper: async (selector, id) =>
+    {
+        // Set edit id
+        document.querySelector(selector + '-input > input[name="to_uid"]').value = id;
+
         document.querySelector(selector + '-input > input[name="message"]').focus();
     },
     renderTime: (unixTimestamp) =>

@@ -23,7 +23,7 @@ class Core
         'description' => 'RT Chat is a modern and responsive MyBB chat plugin which utilizes MyBB cache system when retrieving messages via ajax.',
         'author' => 'RevertIT',
         'authorsite' => 'https://github.com/RevertIT/',
-        'version' => '1.1',
+        'version' => '1.2',
         'compatibility' => '18*',
         'codename' => 'rt_chat',
         'prefix' => 'rt_chat',
@@ -88,6 +88,18 @@ class Core
 
         return is_member($setting) || in_array(-1, $setting);
     }
+
+	/**
+	 * Can send private chat whispers to other members
+	 *
+	 * @return bool
+	 */
+	public static function can_send_whisper(): bool
+	{
+		$setting = \rt\Chat\get_settings_values('cansend_whisper');
+
+		return is_member($setting) || in_array(-1, $setting);
+	}
 
     /**
      * Can view the chat history
@@ -236,6 +248,7 @@ class Core
 
         $rt_cache->delete(Core::get_plugin_info('prefix') . '_bans');
         $rt_cache->delete('rt_chat_messages');
+		$rt_cache->query("")->delete('top_10_posters');
     }
 
     /**
@@ -345,6 +358,12 @@ class Core
                     'optionscode' => 'numeric',
                     'value' => '0',
                 ],
+				"cansend_whisper" => [
+					'title' => 'Who can send whispers (Private chat message)',
+					'description' => 'Groups that can send private chat messages to other users.',
+					'optionscode' => 'groupselect',
+					'value' => '-1',
+				],
                 "canview_chat" => [
                     'title' => 'Who can view the chat',
                     'description' => 'Groups that can view the chat.',
@@ -394,18 +413,21 @@ class Core
             'pgsql' => "CREATE TABLE IF NOT EXISTS ".TABLE_PREFIX."rtchat (
                             id SERIAL PRIMARY KEY,
                             uid INTEGER,
+                            touid INTEGER,
                             message TEXT,
                             dateline INTEGER
                         );",
             'sqlite' => "CREATE TABLE IF NOT EXISTS ".TABLE_PREFIX."rtchat (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             uid INTEGER,
+                            touid INTEGER,
                             message TEXT,
                             dateline INTEGER
                         );",
             default => "CREATE TABLE IF NOT EXISTS ".TABLE_PREFIX."rtchat(
                             id INT NOT NULL AUTO_INCREMENT,
                             uid INT NULL,
+                            touid INT NULL,
                             message TEXT NULL,
                             dateline INT NULL,
                             PRIMARY KEY(`id`)
@@ -447,6 +469,7 @@ class Core
 
         $db->insert_query('rtchat', [
             'uid' => 1,
+			'touid' => 0,
             'message' => 'This is a first message!',
             'dateline' => TIME_NOW,
         ]);
@@ -517,8 +540,11 @@ class Core
         global $PL;
 
         $styles = [
-            self::$PLUGIN_DETAILS['prefix'] => [
-                'attached_to' => [],
+            self::$PLUGIN_DETAILS['prefix']  => [
+                'attached_to' => [
+					'index.php' => '',
+					'misc.php' => '',
+				],
             ],
         ];
 
@@ -577,11 +603,15 @@ class Core
     {
         global $mybb;
 
-        $html = null;
+        $html = '';
 
-        $html .= '<script src="'.$mybb->asset_url.'/jscripts/'.self::$PLUGIN_DETAILS['prefix'].'.js?ver='.self::$PLUGIN_DETAILS['version'].'"></script>' . PHP_EOL;
-
-        $html .= '</head>';
+		switch (\THIS_SCRIPT)
+		{
+			case 'index.php' || 'misc.php':
+				$html .= '<script src="' . $mybb->asset_url . '/jscripts/' . self::$PLUGIN_DETAILS['prefix'] . '.js?ver=' . self::$PLUGIN_DETAILS['version'] . '"></script>' . PHP_EOL;
+				$html .= '</head>';
+				break;
+		}
 
         return $html;
     }

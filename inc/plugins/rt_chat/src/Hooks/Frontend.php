@@ -47,7 +47,14 @@ function global_start(): void
         case 'xmlhttp.php':
             if ($mybb->get_input('action') === Core::get_plugin_info('prefix'))
             {
-                \rt\Chat\load_templatelist(['chat_message']);
+                \rt\Chat\load_templatelist([
+					'chat_message',
+					'chat_whisper_meta',
+					'chat_actions',
+					'chat_action_edit',
+					'chat_action_delete',
+					'chat_action_whisper'
+				]);
             }
     };
 }
@@ -60,6 +67,7 @@ function global_start(): void
 function index_start(): void
 {
     global $mybb, $lang, $rt_chat;
+
     if (Core::can_view())
     {
         $is_disabled = '';
@@ -99,28 +107,65 @@ function pre_output_page(string $content): string
  */
 function misc_start(): void
 {
-    global $mybb, $lang, $header, $headerinclude, $footer;
+    global $mybb, $lang, $header, $headerinclude, $footer, $theme, $rt_cache;
 
     if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
     {
         // View chat layout
-        if (Core::can_view())
-        {
-            $lang->load('rt_chat');
+		$lang->load('rt_chat');
 
-            $is_disabled = '';
-            if ($mybb->user['uid'] < 1 || !Core::can_post() && !Core::can_moderate())
-            {
-                $is_disabled = ' disabled="disabled"';
-            }
+		// Top 5 chat posters
+		if ($mybb->get_input('action') === 'statistics')
+		{
+			$top5 = $rt_cache->query("
+			SELECT
+				COUNT(message) AS total_messages,
+				c.uid,
+				u.username,
+				u.usergroup,
+				u.displaygroup
+			FROM
+				".TABLE_PREFIX."rtchat c
+			LEFT JOIN ".TABLE_PREFIX."users u ON
+				u.uid = c.uid
+			GROUP BY
+				u.uid
+			ORDER BY
+				total_messages
+			DESC
+			LIMIT 10;
+			")->cache('top_10_posters', 1800)->execute();
 
-            add_breadcrumb($lang->rt_chat_name, 'misc.php?ext=' . Core::get_plugin_info('prefix'));
+			$rt_chat_statistics_row = '';
+			foreach ($top5 as $row)
+			{
+				$row['username'] = isset($row['uid'], $row['username'], $row['usergroup'], $row['displaygroup']) ? build_profile_link(format_name($row['username'], $row['usergroup'], $row['displaygroup']), $row['uid']) : $lang->na;
+				$row['total_messages'] = number_format((int) $row['total_messages']);
 
-            eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
+				eval('$rt_chat_statistics_row = "' . \rt\Chat\template('chat_statistics_row', true) . '";');
+			}
 
-            eval('$template = "' . \rt\Chat\template('chat_layout') . '";');
-            output_page($template);
-        }
+			eval('$rt_chat_statistics = "' . \rt\Chat\template('chat_statistics',  true) . '";');
+			output_page($rt_chat_statistics);
+			exit;
+		}
+
+		if (Core::can_view())
+		{
+			$is_disabled = '';
+			if ($mybb->user['uid'] < 1 || !Core::can_post() && !Core::can_moderate())
+			{
+				$is_disabled = ' disabled="disabled"';
+			}
+
+			add_breadcrumb($lang->rt_chat_name, 'misc.php?ext=' . Core::get_plugin_info('prefix'));
+
+			eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
+
+			eval('$template = "' . \rt\Chat\template('chat_layout') . '";');
+			output_page($template);
+			exit;
+		}
     }
 }
 
@@ -165,8 +210,9 @@ function xmlhttp(): void
         {
             $insert = new Create();
             $uid = (int) $mybb->user['uid'];
+			$touid = $mybb->get_input('to_uid', \MyBB::INPUT_INT);
 
-            $data = $insert->insertMessage($uid, $mybb->get_input('message'));
+            $data = $insert->insertMessage($uid, $touid, $mybb->get_input('message'));
 
             header('Content-type: application/json');
             echo json_encode($data);
@@ -264,7 +310,7 @@ function newreply_do_newreply_end(): void
         $forum_name = isset(get_forum($post['fid'])['name']) ? htmlspecialchars_uni(get_forum($post['fid'])['name']) : $lang->na;
 
         $lang->rt_chat_new_post = $lang->sprintf($lang->rt_chat_new_post, $post_link, $thread_link, $thread_subject, $user_link, $post['username'], $forum_link, $forum_name);
-        $insert->insertMessage((int) $mybb->settings['rt_chat_bot_id'], $lang->rt_chat_new_post, true);
+        $insert->insertMessage((int) $mybb->settings['rt_chat_bot_id'], 0, $lang->rt_chat_new_post, true);
     }
 }
 
@@ -291,7 +337,7 @@ function newthread_do_newthread_end(): void
         $forum_name = isset(get_forum($new_thread['fid'])['name']) ? htmlspecialchars_uni(get_forum($new_thread['fid'])['name']) : $lang->na;
 
         $lang->rt_chat_new_thread = $lang->sprintf($lang->rt_chat_new_thread, $thread_link, $new_thread['subject'], $user_link, $new_thread['username'], $forum_link, $forum_name);
-        $insert->insertMessage((int) $mybb->settings['rt_chat_bot_id'], $lang->rt_chat_new_thread, true);
+        $insert->insertMessage((int) $mybb->settings['rt_chat_bot_id'], 0, $lang->rt_chat_new_thread, true);
     }
 }
 
@@ -314,6 +360,6 @@ function member_do_register_end(): void
         $user_link = $mybb->settings['bburl'] . '/member.php?action=profile&uid=' . $user_info['uid'];
 
         $lang->rt_chat_new_user = $lang->sprintf($lang->rt_chat_new_user, $user_link, $user_info['username']);
-        $insert->insertMessage((int) $mybb->settings['rt_chat_bot_id'], $lang->rt_chat_new_user, true);
+        $insert->insertMessage((int) $mybb->settings['rt_chat_bot_id'], 0, $lang->rt_chat_new_user, true);
     }
 }

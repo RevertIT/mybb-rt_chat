@@ -86,6 +86,12 @@ class Read extends AbstractChatHandler
             $messages = $data = [];
             foreach ($cached_messages as $key => $row)
             {
+
+				if (isset($row['touid']) && (int) $row['touid'] > 0 && (int) $row['touid'] !== (int) $this->mybb->user['uid'] && (int) $this->mybb->user['uid'] !== (int) $row['uid'])
+				{
+					continue;
+				}
+
                 // Find message first/last iterations
                 if ($key === 0)
                 {
@@ -94,18 +100,33 @@ class Read extends AbstractChatHandler
                 $data['last'] = $row['id'];
                 $data['loaded'][] = $row['id'];
 
-                $row['edit_message'] = $row['delete_message'] = '';
-                if (Core::can_moderate() || $row['uid'] === $this->mybb->user['uid'])
-                {
-                    $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
-                    $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
-                }
+				$rt_chat_action_edit = $rt_chat_action_delete = $rt_chat_action_whisper = '';
+				if (Core::can_moderate() || (int) $row['uid'] === (int) $this->mybb->user['uid'])
+				{
+					eval("\$rt_chat_action_edit = \"".\rt\Chat\template('chat_action_edit', true)."\";");
+					eval("\$rt_chat_action_delete = \"".\rt\Chat\template('chat_action_delete', true)."\";");
+				}
+				if (Core::can_post() && Core::can_send_whisper() && (int) $this->mybb->user['uid'] !== (int) $row['uid'])
+				{
+					eval("\$rt_chat_action_whisper = \"".\rt\Chat\template('chat_action_whisper', true)."\";");
+				}
+				eval("\$rt_chat_actions = \"".\rt\Chat\template('chat_actions', true)."\";");
 
                 $row['dateline'] = $row['dateline'] ?? TIME_NOW;
                 $row['avatar'] = !empty($row['avatar']) ? htmlspecialchars_uni($row['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
                 $row['username'] = isset($row['uid'], $row['username'], $row['usergroup'], $row['displaygroup']) ? build_profile_link(format_name($row['username'], $row['usergroup'], $row['displaygroup']), $row['uid']) : $this->lang->na;
                 $row['original_message'] = isset($row['message']) ? base64_encode(htmlspecialchars_uni($row['message'])) : null;
                 $row['message'] = isset($row['message']) ? $this->parser->parse_message($row['message'], $parser_options) : null;
+
+				$rt_chat_whisper = '';
+				if ((int) $row['touid'] > 0)
+				{
+					if ((int) $this->mybb->user['uid'] === (int) $row['uid'] || (int) $row['touid'] === (int) $this->mybb->user['uid'])
+					{
+						$username =  build_profile_link(format_name($row['to_username'], $row['to_usergroup'], $row['to_displaygroup']), $row['touid']);
+						eval("\$rt_chat_whisper = \"".\rt\Chat\template('chat_whisper_meta', true)."\";");
+					}
+				}
 
                 eval("\$message = \"".\rt\Chat\template('chat_message', true)."\";");
                 $messages[] = [
@@ -171,39 +192,55 @@ class Read extends AbstractChatHandler
             $parser_options['allow_smilies'] = 1;
         }
 
-        // Get current cache
+        // Get older messages
         $query = $this->db->write_query("
-            SELECT c.*, u.username, u.usergroup, u.displaygroup, u.avatar
-            FROM ".TABLE_PREFIX."rtchat c
-            LEFT JOIN ".TABLE_PREFIX."users u ON u.uid = c.uid
-            WHERE c.id < {$messageId}
-            ORDER BY c.id DESC
-            LIMIT {$this->mybb->settings['rt_chat_total_messages']}
+			SELECT c.*, u.username, u.usergroup, u.displaygroup, u.avatar, t.username AS to_username, t.usergroup AS to_usergroup, t.displaygroup AS to_displaygroup
+			FROM ".TABLE_PREFIX."rtchat c
+			LEFT JOIN ".TABLE_PREFIX."users u ON u.uid = c.uid
+			LEFT JOIN ".TABLE_PREFIX."users t ON t.uid = c.touid
+			WHERE c.id < {$messageId}
+			ORDER BY c.id DESC
+			LIMIT {$this->mybb->settings['rt_chat_total_messages']}
         ");
 
         $data = $messages = [];
         foreach ($query as $key => $row)
         {
-            // Find message first/last iterations
-            if ($key === 0)
-            {
-                $data['first'] = $row['id'];
-            }
-            $data['last'] = $row['id'];
+			if (isset($row['touid']) && (int) $row['touid'] > 0 && (int) $this->mybb->user['uid'] !== (int) $row['touid'])
+			{
+				continue;
+			}
+
+            $data['first'] = $row['id'];
             $data['loaded'][] = $row['id'];
 
-            $row['edit_message'] = $row['delete_message'] = '';
-            if (Core::can_moderate() || $row['uid'] === $this->mybb->user['uid'])
-            {
-                $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
-                $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
-            }
+			$rt_chat_action_edit = $rt_chat_action_delete = $rt_chat_action_whisper = '';
+			if (Core::can_moderate() || (int) $row['uid'] === (int) $this->mybb->user['uid'])
+			{
+				eval("\$rt_chat_action_edit = \"".\rt\Chat\template('chat_action_edit', true)."\";");
+				eval("\$rt_chat_action_delete = \"".\rt\Chat\template('chat_action_delete', true)."\";");
+			}
+			if (Core::can_post() && Core::can_send_whisper() && (int) $this->mybb->user['uid'] !== (int) $row['uid'])
+			{
+				eval("\$rt_chat_action_whisper = \"".\rt\Chat\template('chat_action_whisper', true)."\";");
+			}
+			eval("\$rt_chat_actions = \"".\rt\Chat\template('chat_actions', true)."\";");
 
             $row['dateline'] = $row['dateline'] ?? TIME_NOW;
             $row['avatar'] = !empty($row['avatar']) ? htmlspecialchars_uni($row['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
             $row['username'] = isset($row['uid'], $row['username'], $row['usergroup'], $row['displaygroup']) ? build_profile_link(format_name($row['username'], $row['usergroup'], $row['displaygroup']), $row['uid']) : $this->lang->na;
             $row['original_message'] = isset($row['message']) ? base64_encode(htmlspecialchars_uni($row['message'])) : null;
             $row['message'] = isset($row['message']) ? $this->parser->parse_message($row['message'], $parser_options) : null;
+
+			$rt_chat_whisper = '';
+			if ((int) $row['touid'] > 0)
+			{
+				if ((int) $this->mybb->user['uid'] === (int) $row['uid'] || (int) $row['touid'] === (int) $this->mybb->user['uid'])
+				{
+					$username =  build_profile_link(format_name($row['to_username'], $row['to_usergroup'], $row['to_displaygroup']), $row['touid']);
+					eval("\$rt_chat_whisper = \"".\rt\Chat\template('chat_whisper_meta', true)."\";");
+				}
+			}
 
             eval("\$message = \"".\rt\Chat\template('chat_message', true)."\";");
 
@@ -218,7 +255,6 @@ class Read extends AbstractChatHandler
         // Arrange array
         $final_data = [
             'status' => true,
-            'cached' => my_date('c', TIME_NOW),
             'messages' => $messages,
             'data' => $data,
         ];

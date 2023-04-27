@@ -1,0 +1,1 @@
+<a id="{$row['id']}" data-to_uid="{$row['uid']}" class="rt_chat-whisper" href="javascript:void(0);">{$this->lang->rt_chat_whisper}</a>

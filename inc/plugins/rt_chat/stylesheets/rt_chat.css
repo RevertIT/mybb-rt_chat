@@ -16,7 +16,7 @@
 .rt_chat-messages {
     overflow-y: scroll;
     padding: 10px;
-    height: 350px;
+    height: 100%;
 }
 .rt_chat-message {
     display: flex;

@@ -22,15 +22,16 @@ class Create extends ChatActions
 {
     private int $messageId;
 
-    /**
-     * Insert chat message handler
-     *
-     * @param int $uid User uid
-     * @param string $message Message to be inserted
-     * @param bool $overrideChecks Whether all data protection should be overridden or not.
-     * @return array|bool
-     */
-    public function insertMessage(int $uid, string $message, bool $overrideChecks = false): array|bool
+	/**
+	 * Insert chat message handler
+	 *
+	 * @param int $uid User uid
+	 * @param int $touid Message to be sent to specific user
+	 * @param string $message Message to be inserted
+	 * @param bool $overrideChecks Whether all data protection should be overridden or not.
+	 * @return array|bool
+	 */
+    public function insertMessage(int $uid, int $touid = 0, string $message, bool $overrideChecks = false): array|bool
     {
         global $plugins;
 
@@ -69,6 +70,21 @@ class Create extends ChatActions
             $this->lang->rt_chat_too_long_msg = $this->lang->sprintf($this->lang->rt_chat_too_long_msg, my_strlen($message), $this->mybb->settings['rt_chat_msg_length']);
             $this->error($this->lang->rt_chat_too_long_msg);
         }
+		if (!empty($touid))
+		{
+			if (!Core::can_send_whisper())
+			{
+				$this->error($this->lang->rt_chat_whisper_no_permission);
+			}
+			if (empty(get_user($touid)))
+			{
+				$this->error($this->lang->rt_chat_whisper_user_not_found);
+			}
+			if ($touid === $uid)
+			{
+				$this->error($this->lang->rt_chat_whisper_same_user);
+			}
+		}
 
         // Anti-flood protection
         $current_messages = $this->getCachedMessages();
@@ -113,7 +129,7 @@ class Create extends ChatActions
                 case $this->checkUser($message):
                     $uid = (int) $this->mybb->settings['rt_chat_bot_id'];
                     $message = $this->actionMessage;
-                    return $this->renderTemplate(1, $uid, $message, TIME_NOW); // Mock up message visible only to user which called the command.
+                    return $this->renderTemplate(1, $uid, 0, $message, TIME_NOW); // Mock up message visible only to user which called the command.
             }
         }
 
@@ -124,6 +140,7 @@ class Create extends ChatActions
 
         $this->messageId = $this->db->insert_query('rtchat', [
             'uid' => $uid,
+			'touid' => $touid,
             'message' => $this->db->escape_string($message),
             'dateline' => TIME_NOW,
         ]);
@@ -138,7 +155,8 @@ class Create extends ChatActions
         // We return mockup of current inserted message
         return $this->renderTemplate(
             (int) $this->messageId,
-            $uid,
+			$uid,
+			$touid,
             $message,
             TIME_NOW
         );

@@ -79,16 +79,17 @@ class AbstractChatHandler
         ];
     }
 
-    /**
-     * Generate a mockup to render latest message in the chat
-     *
-     * @param int $messageId
-     * @param int $uid
-     * @param string $message
-     * @param int $dateline
-     * @return bool|array
-     */
-    protected function renderTemplate(int $messageId, int $uid, string $message, int $dateline): bool|array
+	/**
+	 * Generate a mockup to render latest message in the chat
+	 *
+	 * @param int $messageId
+	 * @param int $uid
+	 * @param int $touid
+	 * @param string $message
+	 * @param int $dateline
+	 * @return bool|array
+	 */
+    protected function renderTemplate(int $messageId, int $uid, int $touid = 0, string $message, int $dateline): bool|array
     {
         if (empty($messageId))
         {
@@ -130,8 +131,35 @@ class AbstractChatHandler
         $row['username'] = isset($user['uid'], $user['username'], $user['usergroup'], $user['displaygroup']) ? build_profile_link(format_name($user['username'], $user['usergroup'], $user['displaygroup']), $user['uid']) : $this->lang->na;
         $row['original_message'] = base64_encode(htmlspecialchars_uni($message));
         $row['message'] = $this->parser->parse_message($message, $parser_options);
-        $row['edit_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-edit" href="javascript:void(0);">'.$this->lang->rt_chat_edit.'</a>';
-        $row['delete_message'] = '<a id="'.$row['id'].'" class="'.Core::get_plugin_info('prefix').'-delete" href="javascript:void(0);">'.$this->lang->rt_chat_delete.'</a>';
+
+		// Action bar
+		$rt_chat_action_edit = $rt_chat_action_delete = $rt_chat_action_whisper = '';
+		if (Core::can_moderate() || $uid === (int) $this->mybb->user['uid'])
+		{
+			eval("\$rt_chat_action_edit = \"".\rt\Chat\template('chat_action_edit', true)."\";");
+			eval("\$rt_chat_action_delete = \"".\rt\Chat\template('chat_action_delete', true)."\";");
+		}
+		if (Core::can_post() && Core::can_send_whisper() && $uid !== (int) $this->mybb->user['uid'])
+		{
+			eval("\$rt_chat_action_whisper = \"".\rt\Chat\template('chat_action_whisper', true)."\";");
+		}
+		eval("\$rt_chat_actions = \"".\rt\Chat\template('chat_actions', true)."\";");
+
+		// Whisper user
+		$rt_chat_whisper = '';
+		if ($touid > 0)
+		{
+			$to_user = get_user($touid);
+			if (!empty($to_user))
+			{
+				$username = build_profile_link(format_name($to_user['username'], $to_user['usergroup'], $to_user['displaygroup']), $touid);
+				eval("\$rt_chat_whisper = \"".\rt\Chat\template('chat_whisper_meta', true)."\";");
+			}
+			else
+			{
+				$touid = 0;
+			}
+		}
 
         eval("\$message = \"".\rt\Chat\template('chat_message', true)."\";");
         $messages[] =  [
@@ -159,9 +187,10 @@ class AbstractChatHandler
 
         // Query DB for latest data
         $query = $this->db->write_query("
-                SELECT c.*, u.username, u.usergroup, u.displaygroup, u.avatar
+                SELECT c.*, u.username, u.usergroup, u.displaygroup, u.avatar, t.username AS to_username, t.usergroup AS to_usergroup, t.displaygroup AS to_displaygroup
                 FROM ".TABLE_PREFIX."rtchat c
                 LEFT JOIN ".TABLE_PREFIX."users u ON u.uid = c.uid
+                LEFT JOIN ".TABLE_PREFIX."users t ON t.uid = c.touid
                 ORDER BY c.id DESC
                 LIMIT {$this->mybb->settings['rt_chat_total_messages']}
             ");

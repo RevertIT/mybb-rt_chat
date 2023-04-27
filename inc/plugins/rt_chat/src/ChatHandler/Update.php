@@ -19,13 +19,13 @@ use rt\Chat\Core;
 
 class Update extends AbstractChatHandler
 {
-    /**
-     * Update message based on id
-     *
-     * @param int $messageId
-     * @param string $message
-     * @return bool|array
-     */
+	/**
+	 * Update message based on id
+	 *
+	 * @param int $messageId
+	 * @param string $message
+	 * @return bool|array
+	 */
     public function updateMessage(int $messageId, string $message): bool|array
     {
         global $plugins;
@@ -54,7 +54,7 @@ class Update extends AbstractChatHandler
             $this->error($this->lang->rt_chat_no_posts);
         }
 
-        $query = $this->db->simple_select('rtchat', 'uid, message, dateline', "id = '{$this->db->escape_string($messageId)}'");
+        $query = $this->db->simple_select('rtchat', 'uid, message, dateline, touid', "id = '{$this->db->escape_string($messageId)}'");
         $row = $this->db->fetch_array($query);
 
         if (empty($row) || isset($row['uid']) && $row['uid'] !== $this->mybb->user['uid'] && !Core::can_moderate())
@@ -81,7 +81,8 @@ class Update extends AbstractChatHandler
 
         return $this->renderTemplate(
             $messageId,
-            (int) $this->mybb->user['uid'],
+			(int) $row['uid'],
+			(int) $row['touid'],
             $this->db->escape_string($message),
             (int) $row['dateline'],
         );

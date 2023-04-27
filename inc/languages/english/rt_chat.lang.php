@@ -1,8 +1,15 @@
 <?php
 
 $l['rt_chat_name'] = 'RT Chat (Change in language file)';
+$l['rt_chat_statistics'] = 'Statistics';
+$l['rt_chat_username'] = 'Username';
+$l['rt_chat_num_of_messages'] = 'Number of messages';
 $l['rt_chat_enter_message'] = 'Enter your message...';
 $l['rt_chat_send'] = 'Send';
+$l['rt_chat_whisper'] = 'Whisper';
+$l['rt_chat_whisper_user_not_found'] = 'User you are trying to whisper does not exist';
+$l['rt_chat_whisper_same_user'] = 'You can not whisper yourself';
+$l['rt_chat_whisper_no_permission'] = 'You do not have permission to send whispers';
 $l['rt_chat_no_messages_found'] = 'No messages found in chat';
 $l['rt_chat_no_new_messages_found'] = 'No new messages found';
 $l['rt_chat_no_perms'] = 'You do not have permission to view the chat';
