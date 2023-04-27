@@ -25,6 +25,8 @@ Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system whe
 ### 📃 Features
 - Responsive design (CSS, templates, and settings included)
 - Ajax chat with cached messages. (**No database stress!**)
+- Whispers system. (Private chat messages)
+- Popup modal for top 10 chat posters
 - Chat bot (Get configurable notifications from bot in chat)
 - Chat actions like (/clear, /ban, /unban, /check)
 - Anti flood system
@@ -90,8 +92,8 @@ Open a new question by [clicking here](https://github.com/RevertIT/mybb-rt_chat/
 Open a new bug report by [clicking here](https://github.com/RevertIT/mybb-rt_chat/issues/new)
 
 ### 📷 Preview
-<img src="https://i.postimg.cc/j5CZLRqV/ss1.png" alt="ss1">
+<img src="https://i.postimg.cc/brCgBSTD/ss1.png" alt="ss1">
 <img src="https://i.postimg.cc/QxdV5GWT/ss1.png" alt="ss1">
 <img src="https://i.postimg.cc/xjg4wTQB/ss5.png" alt="ss1">
-<img src="https://i.postimg.cc/G2NzD694/ss2.png" alt="ss2">
-<img src="https://i.postimg.cc/tJxkNDV2/ss3.png" alt="ss3">
+<img src="https://i.postimg.cc/G2NzD694/ss2.png" alt="ss1">
+<img src="https://i.postimg.cc/tJxkNDV2/ss3.png" alt="ss1">
