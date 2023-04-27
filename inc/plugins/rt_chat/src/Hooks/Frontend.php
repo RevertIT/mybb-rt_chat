@@ -41,20 +41,25 @@ function global_start(): void
         case 'misc.php':
             if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
             {
-                \rt\Chat\load_templatelist(['chat_layout', 'chat']);
+                \rt\Chat\load_templatelist([
+                    'chat_layout',
+                    'chat',
+                    'chat_statistics',
+                    'chat_statistics_row'
+                ]);
             }
             break;
         case 'xmlhttp.php':
             if ($mybb->get_input('action') === Core::get_plugin_info('prefix'))
             {
                 \rt\Chat\load_templatelist([
-					'chat_message',
-					'chat_whisper_meta',
-					'chat_actions',
-					'chat_action_edit',
-					'chat_action_delete',
-					'chat_action_whisper'
-				]);
+                    'chat_message',
+                    'chat_whisper_meta',
+                    'chat_actions',
+                    'chat_action_edit',
+                    'chat_action_delete',
+                    'chat_action_whisper'
+                ]);
             }
     };
 }
@@ -112,12 +117,12 @@ function misc_start(): void
     if ($mybb->get_input('ext') === Core::get_plugin_info('prefix'))
     {
         // View chat layout
-		$lang->load('rt_chat');
+        $lang->load('rt_chat');
 
-		// Top 5 chat posters
-		if ($mybb->get_input('action') === 'statistics')
-		{
-			$top5 = $rt_cache->query("
+        // Top 5 chat posters
+        if ($mybb->get_input('action') === 'statistics')
+        {
+            $top5 = $rt_cache->query("
 			SELECT
 				COUNT(message) AS total_messages,
 				c.uid,
@@ -136,36 +141,36 @@ function misc_start(): void
 			LIMIT 10;
 			")->cache('top_10_posters', 1800)->execute();
 
-			$rt_chat_statistics_row = '';
-			foreach ($top5 as $row)
-			{
-				$row['username'] = isset($row['uid'], $row['username'], $row['usergroup'], $row['displaygroup']) ? build_profile_link(format_name($row['username'], $row['usergroup'], $row['displaygroup']), $row['uid']) : $lang->na;
-				$row['total_messages'] = number_format((int) $row['total_messages']);
+            $rt_chat_statistics_row = '';
+            foreach ($top5 as $row)
+            {
+                $row['username'] = isset($row['uid'], $row['username'], $row['usergroup'], $row['displaygroup']) ? build_profile_link(format_name($row['username'], $row['usergroup'], $row['displaygroup']), $row['uid']) : $lang->na;
+                $row['total_messages'] = number_format((int) $row['total_messages']);
 
-				eval('$rt_chat_statistics_row = "' . \rt\Chat\template('chat_statistics_row', true) . '";');
-			}
+                eval('$rt_chat_statistics_row .= "' . \rt\Chat\template('chat_statistics_row', true) . '";');
+            }
 
-			eval('$rt_chat_statistics = "' . \rt\Chat\template('chat_statistics',  true) . '";');
-			output_page($rt_chat_statistics);
-			exit;
-		}
+            eval('$rt_chat_statistics = "' . \rt\Chat\template('chat_statistics',  true) . '";');
+            output_page($rt_chat_statistics);
+            exit;
+        }
 
-		if (Core::can_view())
-		{
-			$is_disabled = '';
-			if ($mybb->user['uid'] < 1 || !Core::can_post() && !Core::can_moderate())
-			{
-				$is_disabled = ' disabled="disabled"';
-			}
+        if (Core::can_view())
+        {
+            $is_disabled = '';
+            if ($mybb->user['uid'] < 1 || !Core::can_post() && !Core::can_moderate())
+            {
+                $is_disabled = ' disabled="disabled"';
+            }
 
-			add_breadcrumb($lang->rt_chat_name, 'misc.php?ext=' . Core::get_plugin_info('prefix'));
+            add_breadcrumb($lang->rt_chat_name, 'misc.php?ext=' . Core::get_plugin_info('prefix'));
 
-			eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
+            eval('$rt_chat = "' . \rt\Chat\template('chat') . '";');
 
-			eval('$template = "' . \rt\Chat\template('chat_layout') . '";');
-			output_page($template);
-			exit;
-		}
+            eval('$template = "' . \rt\Chat\template('chat_layout') . '";');
+            output_page($template);
+            exit;
+        }
     }
 }
 
@@ -197,7 +202,6 @@ function xmlhttp(): void
         // View chat history on scroll
         if ($mybb->get_input('action') === 'load_messages' && !empty($mybb->get_input('before', \MyBB::INPUT_INT)))
         {
-
             $messages = new Read();
 
             header('Content-type: application/json');
@@ -210,7 +214,7 @@ function xmlhttp(): void
         {
             $insert = new Create();
             $uid = (int) $mybb->user['uid'];
-			$touid = $mybb->get_input('to_uid', \MyBB::INPUT_INT);
+            $touid = $mybb->get_input('to_uid', \MyBB::INPUT_INT);
 
             $data = $insert->insertMessage($uid, $touid, $mybb->get_input('message'));
 

@@ -9,9 +9,7 @@
                     <td class="tcat"><span class="smalltext"><strong>{$lang->rt_chat_username}</strong></span></td>
                     <td class="tcat" align="center"><span class="smalltext"><strong>{$lang->rt_chat_num_of_messages}</strong></span></td>
                 </tr>
-                <tr>
-                    {$rt_chat_statistics_row}
-                </tr>
+                {$rt_chat_statistics_row}
             </table>
     </div>
 </div>
