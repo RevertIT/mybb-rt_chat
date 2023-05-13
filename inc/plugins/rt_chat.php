@@ -31,7 +31,7 @@ require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Delete.php';
 require_once MYBB_ROOT . 'inc/class_parser.php';
 
 // Hooks manager
-if(defined('IN_ADMINCP'))
+if (defined('IN_ADMINCP'))
 {
     require MYBB_ROOT . 'inc/plugins/rt_chat/src/Hooks/Backend.php';
 }
