@@ -38,7 +38,7 @@ Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system whe
 - Max message length
 - Edit/delete messages
 - Groups which can access chat
-- Separated chat page at _/misc.php?ext=rt_chat_
+- Separated chat page at `/misc.php?ext=rt_chat`
 - and many more features.
 
 ### ➕ Installation
@@ -92,8 +92,8 @@ Open a new question by [clicking here](https://github.com/RevertIT/mybb-rt_chat/
 Open a new bug report by [clicking here](https://github.com/RevertIT/mybb-rt_chat/issues/new)
 
 ### 📷 Preview
-<img src="https://i.postimg.cc/brCgBSTD/ss1.png" alt="ss1">
-<img src="https://i.postimg.cc/QxdV5GWT/ss1.png" alt="ss1">
-<img src="https://i.postimg.cc/xjg4wTQB/ss5.png" alt="ss1">
-<img src="https://i.postimg.cc/G2NzD694/ss2.png" alt="ss1">
-<img src="https://i.postimg.cc/tJxkNDV2/ss3.png" alt="ss1">
+<img src="https://i.postimg.cc/brCgBSTD/ss1.png" alt="Screenshot">
+<img src="https://i.postimg.cc/QxdV5GWT/ss1.png" alt="Screenshot">
+<img src="https://i.postimg.cc/xjg4wTQB/ss5.png" alt="Screenshot">
+<img src="https://i.postimg.cc/G2NzD694/ss2.png" alt="Screenshot">
+<img src="https://i.postimg.cc/tJxkNDV2/ss3.png" alt="Screenshot">
