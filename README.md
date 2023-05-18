@@ -1,8 +1,6 @@
 ## RT Chat
 Is a modern and responsive MyBB chat plugin which utilizes MyBB cache system when retrieving messages via ajax. For high performance and no database queries, you can speed up ajax requests to even 1-2 seconds per request for better message sync.
 
-**This is work-in-progress plugin**. Testing and requesting additional features is highly appreciated.
-
 ### Table of contents
 
 1. [❗ Dependencies](#-dependencies)
