@@ -15,3 +15,8 @@
 declare(strict_types=1);
 
 namespace rt\Chat\Hooks;
+
+final class Backend
+{
+
+}

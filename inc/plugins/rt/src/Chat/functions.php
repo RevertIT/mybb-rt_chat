@@ -16,28 +16,27 @@ declare(strict_types=1);
 namespace rt\Chat;
 
 /**
- * Autoload hooks via namespace
+ * Autoload plugin hooks
  *
- * @param string $namespace
+ * @param array $class Array of classes to load for hooks
  * @return void
- *@copyright MyBB-Group
- *
  */
-function autoload_hooks_via_namespace(string $namespace): void
+function autoload_plugin_hooks(array $class): void
 {
     global $plugins;
 
-    $namespace = strtolower($namespace);
-    $user_functions = get_defined_functions()['user'];
-
-    foreach ($user_functions as $function)
+    foreach ($class as $hook)
     {
-        $namespace_prefix = strlen($namespace) + 1;
-
-        if (substr($function, 0, $namespace_prefix) === $namespace . '\\')
+        if (!class_exists($hook))
         {
-            $hook_name = substr_replace($function, '', 0, $namespace_prefix);
-            $plugins->add_hook($hook_name, $namespace . '\\' . $hook_name);
+            continue;
+        }
+
+        $class_methods = get_class_methods(new $hook());
+
+        foreach ($class_methods as $method)
+        {
+            $plugins->add_hook($method, [new $hook(), $method]);
         }
     }
 }

@@ -19,35 +19,37 @@ if (!defined("IN_MYBB"))
     die("Direct initialization of this file is not allowed.");
 }
 
-// Main files
-require MYBB_ROOT . 'inc/plugins/rt_chat/src/Core.php';
-require MYBB_ROOT . 'inc/plugins/rt_chat/src/functions.php';
-require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/AbstractChatHandler.php';
-require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatActions.php';
-require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Create.php';
-require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Read.php';
-require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Update.php';
-require MYBB_ROOT . 'inc/plugins/rt_chat/src/ChatHandler/Delete.php';
-require_once MYBB_ROOT . 'inc/class_parser.php';
+// Autoload classes
+require_once MYBB_ROOT . 'inc/plugins/rt/vendor/autoload.php';
 
+\rt\Autoload\psr4_autoloader(
+    'rt',
+    'src',
+    'rt\\Chat\\',
+    [
+        'rt/Chat/functions.php',
+    ]
+);
+
+$hooks = [];
 // Hooks manager
 if (defined('IN_ADMINCP'))
 {
-    require MYBB_ROOT . 'inc/plugins/rt_chat/src/Hooks/Backend.php';
+    $hooks[] = '\rt\Chat\Hooks\Backend';
 }
-
 if (\rt\Chat\Core::is_enabled())
 {
-    require MYBB_ROOT . 'inc/plugins/rt_chat/src/Hooks/Frontend.php';
+    require_once MYBB_ROOT . 'inc/class_parser.php';
+    $hooks[] = '\rt\Chat\Hooks\Frontend';
 }
+
+// Autoload plugin hooks
+\rt\Chat\autoload_plugin_hooks($hooks);
 
 // Health checks
 \rt\Chat\load_plugin_version();
 \rt\Chat\load_pluginlibrary();
 \rt\Chat\load_rt_extendedcache();
-
-// Hooks autoloader
-\rt\Chat\autoload_hooks_via_namespace('rt\Chat\Hooks');
 
 function rt_chat_info(): array
 {

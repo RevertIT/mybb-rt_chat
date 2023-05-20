@@ -23,7 +23,7 @@ class Core
         'description' => 'RT Chat is a modern and responsive MyBB chat plugin which utilizes MyBB cache system when retrieving messages via ajax.',
         'author' => 'RevertIT',
         'authorsite' => 'https://github.com/RevertIT/',
-        'version' => '1.2',
+        'version' => '1.3',
         'compatibility' => '18*',
         'codename' => 'rt_chat',
         'prefix' => 'rt_chat',
@@ -514,7 +514,7 @@ class Core
         // Prevent underscore on template prefix
             str_replace('_', '', self::$PLUGIN_DETAILS['prefix']),
             self::$PLUGIN_DETAILS['name'],
-            load_template_files('inc/plugins/'.self::$PLUGIN_DETAILS['prefix'].'/templates/')
+            load_template_files('inc/plugins/rt/src/Chat/templates/')
         );
     }
 
@@ -550,8 +550,8 @@ class Core
 
         foreach ($styles as $styleName => $styleProperties)
         {
-            $file = file_exists(MYBB_ROOT . 'inc/plugins/' . self::$PLUGIN_DETAILS['prefix'] . '/stylesheets/' . $styleName . '.css') ?
-                file_get_contents(MYBB_ROOT . 'inc/plugins/' . self::$PLUGIN_DETAILS['prefix'] . '/stylesheets/' . $styleName . '.css') :
+            $file = file_exists(MYBB_ROOT . 'inc/plugins/rt/src/Chat/stylesheets/' . $styleName . '.css') ?
+                file_get_contents(MYBB_ROOT . 'inc/plugins/rt/src/Chat/stylesheets/' . $styleName . '.css') :
                 null;
 
             $PL->stylesheet($styleName, $file, $styleProperties['attached_to']);
