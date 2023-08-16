@@ -23,7 +23,7 @@ class Core
         'description' => 'RT Chat is a modern and responsive MyBB chat plugin which utilizes MyBB cache system when retrieving messages via ajax.',
         'author' => 'RevertIT',
         'authorsite' => 'https://github.com/RevertIT/',
-        'version' => '1.3',
+        'version' => '1.4',
         'compatibility' => '18*',
         'codename' => 'rt_chat',
         'prefix' => 'rt_chat',
@@ -285,7 +285,7 @@ class Core
                 "bot_forums"  => [
                     'title' => 'Which forums should bot check for new posts/threads?',
                     'description' => 'Set the desired forums which bot should check.',
-                    'optionscode' => 'groupselect',
+                    'optionscode' => 'forumselect',
                     'value' => '-1'
                 ],
                 "bot_actions" => [
