@@ -23,7 +23,7 @@ class Core
         'description' => 'RT Chat is a modern and responsive MyBB chat plugin which utilizes MyBB cache system when retrieving messages via ajax.',
         'author' => 'RevertIT',
         'authorsite' => 'https://github.com/RevertIT/',
-        'version' => '1.4',
+        'version' => '1.5',
         'compatibility' => '18*',
         'codename' => 'rt_chat',
         'prefix' => 'rt_chat',

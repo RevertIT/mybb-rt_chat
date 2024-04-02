@@ -126,23 +126,32 @@ final class Frontend
             if ($mybb->get_input('action') === 'statistics')
             {
                 $top5 = $rt_cache->query("
-			SELECT
-				COUNT(message) AS total_messages,
-				c.uid,
-				u.username,
-				u.usergroup,
-				u.displaygroup
-			FROM
-				".TABLE_PREFIX."rtchat c
-			LEFT JOIN ".TABLE_PREFIX."users u ON
-				u.uid = c.uid
-			GROUP BY
-				u.uid
-			ORDER BY
-				total_messages
-			DESC
-			LIMIT 10;
-			")->cache('top_10_posters', 1800)->execute();
+                    SELECT
+                        COUNT(message) AS total_messages,
+                        c.uid,
+                        u.username,
+                        u.usergroup,
+                        u.displaygroup
+                    FROM
+                        ".TABLE_PREFIX."rtchat c
+                    LEFT JOIN ".TABLE_PREFIX."users u ON
+                        u.uid = c.uid
+                    GROUP BY
+                        u.uid
+                    ORDER BY
+                        total_messages
+                    DESC
+                    LIMIT 10;
+                    ")->cache('top_10_posters', 1800)->execute();
+
+                // Placeholder when no messages found in chat
+                if (empty($top5))
+                {
+                    $top5[] = [
+                        'username' => $lang->na,
+                        'total_messages' => 0
+                    ];
+                }
 
                 $rt_chat_statistics_row = '';
                 foreach ($top5 as $row)

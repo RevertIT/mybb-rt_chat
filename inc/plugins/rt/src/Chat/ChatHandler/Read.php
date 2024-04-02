@@ -115,7 +115,7 @@ class Read extends AbstractChatHandler
                 $row['dateline'] = $row['dateline'] ?? TIME_NOW;
                 $row['avatar'] = !empty($row['avatar']) ? htmlspecialchars_uni($row['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
                 $row['username'] = isset($row['uid'], $row['username'], $row['usergroup'], $row['displaygroup']) ? build_profile_link(format_name($row['username'], $row['usergroup'], $row['displaygroup']), $row['uid']) : $this->lang->na;
-                $row['original_message'] = isset($row['message']) ? base64_encode(htmlspecialchars_uni($row['message'])) : null;
+                $row['original_message'] = isset($row['message']) ? base64_encode($row['message']) : null;
                 $row['message'] = isset($row['message']) ? $this->parser->parse_message($row['message'], $parser_options) : null;
 
 				$rt_chat_whisper = '';
@@ -229,7 +229,7 @@ class Read extends AbstractChatHandler
             $row['dateline'] = $row['dateline'] ?? TIME_NOW;
             $row['avatar'] = !empty($row['avatar']) ? htmlspecialchars_uni($row['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
             $row['username'] = isset($row['uid'], $row['username'], $row['usergroup'], $row['displaygroup']) ? build_profile_link(format_name($row['username'], $row['usergroup'], $row['displaygroup']), $row['uid']) : $this->lang->na;
-            $row['original_message'] = isset($row['message']) ? base64_encode(htmlspecialchars_uni($row['message'])) : null;
+            $row['original_message'] = isset($row['message']) ? base64_encode($row['message']) : null;
             $row['message'] = isset($row['message']) ? $this->parser->parse_message($row['message'], $parser_options) : null;
 
 			$rt_chat_whisper = '';

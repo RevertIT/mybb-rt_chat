@@ -91,17 +91,7 @@ class AbstractChatHandler
 	 */
     protected function renderTemplate(int $messageId, int $uid, int $touid = 0, string $message, int $dateline): bool|array
     {
-        if (empty($messageId))
-        {
-            return false;
-        }
-
         $user = get_user($uid);
-
-        if (empty($user))
-        {
-            return false;
-        }
 
         // Parse bbcodes
         $parser_options = [
@@ -129,7 +119,7 @@ class AbstractChatHandler
         $row['date'] = my_date('relative', $dateline);
         $row['avatar'] = !empty($this->mybb->user['avatar']) ? htmlspecialchars_uni($this->mybb->user['avatar']) : "{$this->mybb->settings['bburl']}/images/default_avatar.png";
         $row['username'] = isset($user['uid'], $user['username'], $user['usergroup'], $user['displaygroup']) ? build_profile_link(format_name($user['username'], $user['usergroup'], $user['displaygroup']), $user['uid']) : $this->lang->na;
-        $row['original_message'] = base64_encode(htmlspecialchars_uni($message));
+        $row['original_message'] = base64_encode($message);
         $row['message'] = $this->parser->parse_message($message, $parser_options);
 
 		// Action bar

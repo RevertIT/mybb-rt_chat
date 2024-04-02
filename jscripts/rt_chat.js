@@ -10,7 +10,7 @@
 * @license http://opensource.org/licenses/mit-license.php MIT license
 */
 
-let RT_Chat =
+const RT_Chat =
 {
     oldestMessageId: null,
     isActive: true,
